@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_ENV=development
+      - ROBLE_API_URL=https://roble-api.openlab.uninorte.edu.co/auth/hola_9ff120e8a6
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.localhost`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=5002"
+    restart: always
+    networks:
+      - app-network
+
+#  frontend:
+#    build:
+#      context: ./front-end/frontend
+#      dockerfile: Dockerfile
+#    container_name: frontend
+#    ports:
+#      - "5173:5173"
+#    environment:
+#      - NODE_ENV=development
+#    restart: always
+#    networks:
+#      - app-network
+
+networks:
+  app-network:
+    driver: bridge
