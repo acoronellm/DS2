@@ -1,0 +1,188 @@
+services:
+
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: always
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:15
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: personas_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio
+    container_name: minio_storage
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    restart: always
+    networks:
+      - app-network
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      - minio
+    networks:
+      - app-network
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Esperando MinIO...';
+      until mc alias set local http://minio:9000 admin admin123; do
+        sleep 2;
+      done;
+      mc mb local/fotos-personas || true;
+      mc anonymous set public local/fotos-personas;
+      echo 'Bucket listo y público';
+      exit 0;
+      "
+
+  op-create:
+    build: 
+      context: ./op-create
+      dockerfile: Dockerfile
+    container_name: op-create
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+      - AUTH_SERVICE_URL=http://auth-service:5002
+      - OP_DELETE_URL=http://op-delete:5005
+    depends_on:
+      - postgres
+      - minio
+      - auth-service
+      - op-delete
+    restart: always
+    networks:
+      - app-network
+
+  op-update:
+    build: 
+      context: ./op-update
+      dockerfile: Dockerfile
+    container_name: op-update
+    ports:
+      - "5003:5003"
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - postgres
+      - minio
+    restart: always
+    networks:
+      - app-network
+
+  op-read:
+    build: 
+      context: ./op-read
+      dockerfile: Dockerfile
+    container_name: op-read
+    ports:
+      - "5004:5004"
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - postgres
+      - minio
+    restart: always
+    networks:
+      - app-network
+
+  op-delete:
+    build: 
+      context: ./op-delete
+      dockerfile: Dockerfile
+    container_name: op-delete
+    ports:
+      - "5005:5005"
+    environment:
+      - FLASK_ENV=development
+    depends_on:
+      - postgres
+      - minio
+    restart: always
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "5002:5002"
+    environment:
+      - FLASK_ENV=development
+      - ROBLE_API_URL=https://roble-api.openlab.uninorte.edu.co/auth/ds2_fd1af67fb8
+    restart: always
+    networks:
+      - app-network
+
+  plataforma:
+    build: 
+      context: ./plataforma
+      dockerfile: Dockerfile
+    container_name: plataforma
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - OP_CREATE_URL=http://op-create:5001
+      - OP_UPDATE_URL=http://op-update:5003
+      - OP_READ_URL=http://op-read:5004
+      - OP_DELETE_URL=http://op-delete:5005
+      - AUTH_SERVICE_URL=http://auth-service:5002
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - op-create
+      - op-update
+      - op-read
+      - op-delete
+      - auth-service
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.plataforma.rule=Host(`localhost`)"
+      - "traefik.http.services.plataforma.loadbalancer.server.port=5000"
+    restart: always
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
