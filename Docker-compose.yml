@@ -1,5 +1,6 @@
 services:
 
+  # --- servicios existentes --- #
   traefik:
     image: traefik:v3.1
     container_name: traefik
@@ -67,6 +68,7 @@ services:
       exit 0;
       "
 
+  # --- tus microservicios existentes --- #
   op-create:
     build: 
       context: ./op-create
@@ -149,6 +151,35 @@ services:
     networks:
       - app-network
 
+  # --- n8n actualizado --- #
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n/workflows:/workflows
+      - ./n8n/init.sh:/init.sh
+      - n8n_data:/home/node/.n8n
+    entrypoint: /bin/sh
+    command: /init.sh
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  # --- contenedor para importar workflows --- #
+  n8n-importer:
+    image: curlimages/curl:latest
+    depends_on:
+      - n8n
+    volumes:
+      - ./n8n-flows:/workflows
+      - ./n8n-scripts:/scripts
+    entrypoint: ["/scripts/import-workflows.sh"]
+    networks:
+      - app-network
+
   plataforma:
     build: 
       context: ./plataforma
@@ -182,6 +213,7 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  n8n_data:
 
 networks:
   app-network:
