@@ -34,16 +34,16 @@ BUCKET = "fotos-personas"
 def crear_persona():
     try:
         # Extraer datos del formulario
-        tipo_documento = request.form['tipo_documento']
-        documento = request.form['documento']
+        tipo_documento_identidad = request.form['tipo_documento_identidad']
+        numero_documento = request.form['numero_documento']
         primer_nombre = request.form['primer_nombre']
         segundo_nombre = request.form['segundo_nombre']
         apellidos = request.form['apellidos']
         fecha_nacimiento = request.form['fecha_nacimiento']
-        genero = request.form['genero']
-        correo = request.form['correo']
-        celular = request.form['celular']
-        rol = request.form['rol']
+        genero_persona = request.form['genero_persona']
+        correo_electronico = request.form['correo_electronico']
+        numero_celular = request.form['numero_celular']
+        rol_usuario = request.form['rol_usuario']
         password = request.form['password']
         
         # Manejo de la foto
@@ -52,13 +52,13 @@ def crear_persona():
             
         foto = request.files['foto']
         extension = foto.filename.split('.')[-1]
-        nombre_archivo = f"{documento}.{extension}"
+        nombre_archivo = f"{numero_documento}.{extension}"
 
         conn = get_connection()
         cur = conn.cursor()
 
         # Validar si ya existe
-        cur.execute("SELECT * FROM personas1 WHERE documento = %s", (documento,))
+        cur.execute("SELECT * FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         if cur.fetchone():
             cur.close()
             conn.close()
@@ -80,13 +80,13 @@ def crear_persona():
 
         # Insertar en Postgres
         cur.execute("""
-        INSERT INTO personas1 (
-            documento, tipo_documento, primer_nombre, segundo_nombre, apellidos,
-            fecha_nacimiento, genero, correo, celular, foto_url, rol
+        INSERT INTO personas_registradas (
+            numero_documento, tipo_documento_identidad, primer_nombre, segundo_nombre, apellidos,
+            fecha_nacimiento, genero_persona, correo_electronico, numero_celular, url_foto_perfil, rol_usuario
         ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (
-            documento, tipo_documento, primer_nombre, segundo_nombre, apellidos,
-            fecha_nacimiento, genero, correo, celular, nombre_archivo, rol
+            numero_documento, tipo_documento_identidad, primer_nombre, segundo_nombre, apellidos,
+            fecha_nacimiento, genero_persona, correo_electronico, numero_celular, nombre_archivo, rol_usuario
         ))
 
         conn.commit()
@@ -97,7 +97,7 @@ def crear_persona():
         res = requests.post(
             f"{AUTH_SERVICE_URL}/signup",
             json={
-                "email": correo,
+                "email": correo_electronico,
                 "password": password,
                 "name": primer_nombre + " " + segundo_nombre + " " + apellidos
             }
@@ -109,7 +109,7 @@ def crear_persona():
 
     except Exception as e:
         if creado_en_postgres:
-            requests.get(f"{OP_DELETE_URL}/eliminar_persona/{documento}")
+            requests.get(f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}")
 
         elif subido_a_minio:
             try:

@@ -27,27 +27,27 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
-@app.route("/obtener_persona/<documento>", methods=["GET"])
-def obtener_persona(documento):
+@app.route("/obtener_persona/<numero_documento>", methods=["GET"])
+def obtener_persona(numero_documento):
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM personas1 WHERE documento = %s", (documento,))
+        cur.execute("SELECT * FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         persona = cur.fetchone()
         if persona:
             persona_dict = {
-                "documento": persona[0],
-                "tipo_documento": persona[1],
+                "numero_documento": persona[0],
+                "tipo_documento_identidad": persona[1],
                 "primer_nombre": persona[2],
                 "segundo_nombre": persona[3],
                 "apellidos": persona[4],
                 "fecha_nacimiento": persona[5],
-                "genero": persona[6],
-                "correo": persona[7],
-                "celular": persona[8],
-                "foto_url": persona[9],
-                "rol": persona[10]
+                "genero_persona": persona[6],
+                "correo_electronico": persona[7],
+                "numero_celular": persona[8],
+                "url_foto_perfil": persona[9],
+                "rol_usuario": persona[10]
             }
 
             # 🔥 Manejo seguro de fecha
@@ -76,16 +76,16 @@ def obtener_persona(documento):
 def actualizar_persona():
     try:
         # Extraer datos del formulario
-        tipo_documento = request.form['tipo_documento']
-        documento = request.form['documento']
+        tipo_documento_identidad = request.form['tipo_documento_identidad']
+        numero_documento = request.form['numero_documento']
         primer_nombre = request.form['primer_nombre']
         segundo_nombre = request.form['segundo_nombre']
         apellidos = request.form['apellidos']
         fecha_nacimiento = request.form['fecha_nacimiento']
-        genero = request.form['genero']
-        correo = request.form['correo']
-        celular = request.form['celular']
-        rol = request.form['rol']
+        genero_persona = request.form['genero_persona']
+        correo_electronico = request.form['correo_electronico']
+        numero_celular = request.form['numero_celular']
+        rol_usuario = request.form['rol_usuario']
 
         foto_actual = request.form.get("foto_actual")
         
@@ -93,7 +93,7 @@ def actualizar_persona():
 
         if foto and foto.filename != "":
             extension = foto.filename.split('.')[-1]
-            nombre_archivo = f"{documento}.{extension}"
+            nombre_archivo = f"{numero_documento}.{extension}"
 
             try:
                 client.remove_object(BUCKET, foto.filename)
@@ -121,21 +121,21 @@ def actualizar_persona():
 
         # Insertar en Postgres
         cur.execute("""
-        UPDATE personas1 SET
-            tipo_documento=%s,
+        UPDATE personas_registradas SET
+            tipo_documento_identidad=%s,
             primer_nombre=%s,
             segundo_nombre=%s,
             apellidos=%s,
             fecha_nacimiento=%s,
-            genero=%s,
-            correo=%s,
-            celular=%s,
-            foto_url = COALESCE(%s, foto_url),
-            rol=%s
-        WHERE documento=%s
+            genero_persona=%s,
+            correo_electronico=%s,
+            numero_celular=%s,
+            url_foto_perfil = COALESCE(%s, url_foto_perfil),
+            rol_usuario=%s
+        WHERE numero_documento=%s
         """, (
-            tipo_documento, primer_nombre, segundo_nombre, apellidos,
-            fecha_nacimiento, genero, correo, celular, nombre_archivo, rol, documento
+            tipo_documento_identidad, primer_nombre, segundo_nombre, apellidos,
+            fecha_nacimiento, genero_persona, correo_electronico, numero_celular, nombre_archivo, rol_usuario, numero_documento
         ))
 
         conn.commit()

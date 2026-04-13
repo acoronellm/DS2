@@ -27,27 +27,27 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
-@app.route("/obtener_persona/<documento>", methods=["GET"])
-def obtener_persona(documento):
+@app.route("/obtener_persona/<numero_documento>", methods=["GET"])
+def obtener_persona(numero_documento):
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM personas1 WHERE documento = %s", (documento,))
+        cur.execute("SELECT * FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         persona = cur.fetchone()
         if persona:
             persona_dict = {
-                "documento": persona[0],
-                "tipo_documento": persona[1],
+                "numero_documento": persona[0],
+                "tipo_documento_identidad": persona[1],
                 "primer_nombre": persona[2],
                 "segundo_nombre": persona[3],
                 "apellidos": persona[4],
                 "fecha_nacimiento": persona[5],
-                "genero": persona[6],
-                "correo": persona[7],
-                "celular": persona[8],
-                "foto_url": persona[9],
-                "rol": persona[10]
+                "genero_persona": persona[6],
+                "correo_electronico": persona[7],
+                "numero_celular": persona[8],
+                "url_foto_perfil": persona[9],
+                "rol_usuario": persona[10]
             }
 
             # 🔥 Manejo seguro de fecha

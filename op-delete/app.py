@@ -27,13 +27,13 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
-@app.route("/eliminar_persona/<documento>", methods=["GET"])
-def eliminar_persona(documento):
+@app.route("/eliminar_persona/<numero_documento>", methods=["GET"])
+def eliminar_persona(numero_documento):
     try:
         conn = get_connection()
         cur = conn.cursor()
 
-        cur.execute("SELECT foto_url FROM personas1 WHERE documento = %s", (documento,))
+        cur.execute("SELECT url_foto_perfil FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         resultado = cur.fetchone()
         if not resultado:
             return "❌ Persona no encontrada", 404
@@ -46,7 +46,7 @@ def eliminar_persona(documento):
             except Exception as e:
                 print(f"No se pudo eliminar la foto: {e}")
 
-        cur.execute("DELETE FROM personas1 WHERE documento = %s", (documento,))
+        cur.execute("DELETE FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         conn.commit()
         cur.close()
         conn.close()

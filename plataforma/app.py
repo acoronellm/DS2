@@ -69,26 +69,26 @@ def obtener_info(email):
     try:
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM personas1 WHERE correo = %s", (email,))
+        cur.execute("SELECT * FROM personas_registradas WHERE correo_electronico = %s", (email,))
         persona = cur.fetchone()
         if persona:
             persona_dict = {
-                "documento": persona[0],
-                "tipo_documento": persona[1],
+                "numero_documento": persona[0],
+                "tipo_documento_identidad": persona[1],
                 "primer_nombre": persona[2],
                 "segundo_nombre": persona[3],
                 "apellidos": persona[4],
                 "fecha_nacimiento": persona[5],
-                "genero": persona[6],
-                "correo": persona[7],
-                "celular": persona[8],
-                "foto_url": persona[9],
-                "rol": persona[10]
+                "genero_persona": persona[6],
+                "correo_electronico": persona[7],
+                "numero_celular": persona[8],
+                "url_foto_perfil": persona[9],
+                "rol_usuario": persona[10]
             }
             cur.close()
             conn.close()
-            session["documento"] = persona_dict["documento"]
-            session["rol"] = persona_dict["rol"]
+            session["numero_documento"] = persona_dict["numero_documento"]
+            session["rol_usuario"] = persona_dict["rol_usuario"]
         else:
             persona_dict = None
             cur.close()
@@ -102,7 +102,7 @@ def menu():
     return render_template_string("""
     <h1>MENÚ PRINCIPAL</h1>
     <h2>Bienvenido, {{ email }}</h2>
-    {% if rol == "admin" %}                          
+    {% if rol_usuario == "admin" %}                          
         <p><strong>Access Token:</strong> {{ accessToken }}</p>
         <p><strong>Refresh Token:</strong> {{ refreshToken }}</p>   
         <ul>
@@ -119,7 +119,7 @@ def menu():
     {% else %}
         <li><a href="/formulario_actualizar">Actualizar persona</a></li>
     {% endif %}
-    """, rol=session.get("rol"), email=session.get("user", "Invitado"), accessToken=session.get("accessToken"), refreshToken=session.get("refreshToken"))
+    """, rol_usuario=session.get("rol_usuario"), email=session.get("user", "Invitado"), accessToken=session.get("accessToken"), refreshToken=session.get("refreshToken"))
 
 @app.route("/logout", methods=["POST"])
 def logout():
@@ -205,7 +205,7 @@ def formulario_eliminar():
     return render_template_string("""
     <h1>ELIMINAR PERSONA</h1>
     <form action="/eliminar_persona" method="get">
-        Nro. Documento: <input type="text" name="documento" maxlength="10" pattern="[0-9]+" required><br><br>
+        Nro. Documento: <input type="text" name="numero_documento" maxlength="10" pattern="[0-9]+" required><br><br>
         <input type="submit" value="Eliminar Persona">
     </form>
     <br>
@@ -215,8 +215,8 @@ def formulario_eliminar():
 @app.route("/eliminar_persona", methods=["GET"])
 def eliminar_persona():
     try:
-        documento = request.args.get("documento")
-        response = requests.get(f"{OP_DELETE_URL}/eliminar_persona/{documento}")
+        numero_documento = request.args.get("numero_documento")
+        response = requests.get(f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}")
         return render_template_string("""
         <h1>RESULTADO DE LA ELIMINACIÓN</h1>
         <p>{{ mensaje }}</p>
@@ -234,7 +234,7 @@ def formulario_consultar():
     <h1>CONSULTAR DATOS PERSONALES</h1>
     {% if status %}
         <form action="/consultar_persona" method="get">
-            Nro. Documento: <input type="text" name="documento" maxlength="10" pattern="[0-9]+" required><br><br>
+            Nro. Documento: <input type="text" name="numero_documento" maxlength="10" pattern="[0-9]+" required><br><br>
             <input type="submit" value="Consultar Persona">
         </form>
     {% else %}
@@ -254,27 +254,27 @@ def formulario_consultar():
 
 @app.route("/consultar_persona", methods=["GET"])
 def consultar_persona():
-    documento = request.args.get("documento")
-    persona = obtener_persona1(documento) if documento else None
+    numero_documento = request.args.get("numero_documento")
+    persona = obtener_persona1(numero_documento) if numero_documento else None
     return render_template_string("""
     <h1>INFORMACION OBTENIDA DEL USUARIO</h1>
 
     {% if persona %}
-        <p><strong>Documento:</strong> {{ persona.documento }}</p>
-        <p><strong>Tipo:</strong> {{ persona.tipo_documento }}</p>
+        <p><strong>Documento:</strong> {{ persona.numero_documento }}</p>
+        <p><strong>Tipo:</strong> {{ persona.tipo_documento_identidad }}</p>
         <p><strong>Nombre:</strong> {{ persona.primer_nombre }}</p>
         <p><strong>Segundo Nombre:</strong> {{ persona.segundo_nombre }}</p>
         <p><strong>Apellidos:</strong> {{ persona.apellidos }}</p>
         <p><strong>Fecha Nacimiento:</strong> {{ persona.fecha_nacimiento }}</p>
-        <p><strong>Género:</strong> {{ persona.genero }}</p>
-        <p><strong>Email:</strong> {{ persona.correo }}</p>
-        <p><strong>Celular:</strong> {{ persona.celular }}</p>
-        <p><strong>Foto URL:</strong> {{ persona.foto_url }}</p>
-        {% if persona and persona.foto_url %}
+        <p><strong>Género:</strong> {{ persona.genero_persona }}</p>
+        <p><strong>Email:</strong> {{ persona.correo_electronico }}</p>
+        <p><strong>Celular:</strong> {{ persona.numero_celular }}</p>
+        <p><strong>Foto URL:</strong> {{ persona.url_foto_perfil }}</p>
+        {% if persona and persona.url_foto_perfil %}
         <p><strong>Foto:</strong></p>
-        <img src="http://localhost:9000/fotos-personas/{{ persona.foto_url }}" width="200">
+        <img src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}" width="200">
         {% endif %}
-        <p><strong>Rol:</strong> {{ persona.rol }}</p>
+        <p><strong>Rol:</strong> {{ persona.rol_usuario }}</p>
     {% else %}
         <p style="color:red;"><strong>No se encontró la persona</strong></p>
     {% endif %}
@@ -287,9 +287,9 @@ def consultar_persona():
     <pre>{{ persona }}</pre>
     """, persona=persona)
 
-def obtener_persona1(documento):
+def obtener_persona1(numero_documento):
     try:
-        response = requests.get(f"{OP_READ_URL}/obtener_persona/{documento}")
+        response = requests.get(f"{OP_READ_URL}/obtener_persona/{numero_documento}")
         if response.status_code == 200:
             return response.json()
         else:
@@ -298,9 +298,9 @@ def obtener_persona1(documento):
         print(f"Error obteniendo persona: {str(e)}")
         return None
 
-def obtener_persona(documento):
+def obtener_persona(numero_documento):
     try:
-        response = requests.get(f"{OP_UPDATE_URL}/obtener_persona/{documento}")
+        response = requests.get(f"{OP_UPDATE_URL}/obtener_persona/{numero_documento}")
         if response.status_code == 200:
             return response.json()
         else:
@@ -311,9 +311,9 @@ def obtener_persona(documento):
 
 @app.route("/formulario_actualizar")
 def formulario_actualizar():
-    documento = session.get("documento")
-    #documento = "4"  # Para pruebas, se puede cambiar por un input en el futuro
-    persona = obtener_persona(documento) if documento else None
+    numero_documento = session.get("numero_documento")
+    #numero_documento = "4"  # Para pruebas, se puede cambiar por un input en el futuro
+    persona = obtener_persona(numero_documento) if numero_documento else None
     return render_template_string("""
     <h1>MODIFICAR DATOS PERSONALES</h1>
                                   
@@ -322,17 +322,17 @@ def formulario_actualizar():
         <form action="/actualizar_persona" method="post" enctype="multipart/form-data">
                                     
             Nro. Documento:
-            <input type="text" name="documento" value="{{ persona.documento if persona else '' }}" readonly><br>
+            <input type="text" name="numero_documento" value="{{ persona.numero_documento if persona else '' }}" readonly><br>
 
             Tipo de documento:
-            <select name="tipo_documento" required>
+            <select name="tipo_documento_identidad" required>
                 <option value="">Seleccione</option>
                 <option value="TI"
-                    {% if persona and persona.tipo_documento == "TI" %}selected{% endif %}>
+                    {% if persona and persona.tipo_documento_identidad == "TI" %}selected{% endif %}>
                     Tarjeta de identidad
                 </option>
                 <option value="CC"
-                    {% if persona and persona.tipo_documento == "CC" %}selected{% endif %}>
+                    {% if persona and persona.tipo_documento_identidad == "CC" %}selected{% endif %}>
                     Cédula
                 </option>
             </select><br>
@@ -349,37 +349,37 @@ def formulario_actualizar():
             Fecha Nacimiento: <input type="date" name="fecha_nacimiento" value="{{ persona.fecha_nacimiento if persona else '' }}" required><br>
 
             Genero:
-            <select name="genero" required>
+            <select name="genero_persona" required>
                 <option value="">Seleccione</option>
                 <option value="Masculino"
-                    {% if persona and persona.genero == "Masculino" %}selected{% endif %}>
+                    {% if persona and persona.genero_persona == "Masculino" %}selected{% endif %}>
                     Masculino
                 </option>
                 <option value="Femenino"
-                    {% if persona and persona.genero == "Femenino" %}selected{% endif %}>
+                    {% if persona and persona.genero_persona == "Femenino" %}selected{% endif %}>
                     Femenino
                 </option>
                 <option value="No binario"
-                    {% if persona and persona.genero == "No binario" %}selected{% endif %}>
+                    {% if persona and persona.genero_persona == "No binario" %}selected{% endif %}>
                     No binario
                 </option>
                 <option value="Prefiero no reportar"
-                    {% if persona and persona.genero == "Prefiero no reportar" %}selected{% endif %}>
+                    {% if persona and persona.genero_persona == "Prefiero no reportar" %}selected{% endif %}>
                     Prefiero no reportar
                 </option>
             </select><br>
 
             Correo electrónico:
-            <input type="email" name="correo" value="{{ persona.correo if persona else '' }}" required><br>
+            <input type="email" name="correo_electronico" value="{{ persona.correo_electronico if persona else '' }}" required><br>
 
             Celular:
-            <input type="text" name="celular" value="{{ persona.celular if persona else '' }}" maxlength="10" pattern="[0-9]{10}" required><br><br>
+            <input type="text" name="numero_celular" value="{{ persona.numero_celular if persona else '' }}" maxlength="10" pattern="[0-9]{10}" required><br><br>
 
-            <input type="hidden" name="foto_actual" value="{{ persona.foto_url }}">
+            <input type="hidden" name="foto_actual" value="{{ persona.url_foto_perfil }}">
 
-            {% if persona and persona.foto_url %}
+            {% if persona and persona.url_foto_perfil %}
             <p><strong>Foto actual:</strong></p>
-            <img src="http://localhost:9000/fotos-personas/{{ persona.foto_url }}" width="200"><br>
+            <img src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}" width="200"><br>
             {% endif %}                                  
 
             Foto: <input type="file" name="foto" ><br><br>
@@ -388,16 +388,16 @@ def formulario_actualizar():
             <select disabled>
                 <option value="">Seleccione</option>
                 <option value="admin"
-                    {% if persona and persona.rol == "admin" %}selected{% endif %}>
+                    {% if persona and persona.rol_usuario == "admin" %}selected{% endif %}>
                     admin
                 </option>
                 <option value="user"
-                    {% if persona and persona.rol == "user" %}selected{% endif %}>
+                    {% if persona and persona.rol_usuario == "user" %}selected{% endif %}>
                     user
                 </option>
             </select>
 
-            <input type="hidden" name="rol" value="{{ persona.rol }}"><br>
+            <input type="hidden" name="rol_usuario" value="{{ persona.rol_usuario }}"><br>
 
             <input type="submit" value="Actualizar Persona">
         </form>
@@ -429,10 +429,10 @@ def actualizar_persona():
             files=files
         )
 
-        rol_nuevo = request.form.get("rol")
-        session["rol"] = rol_nuevo
-        session["documento"] = request.form.get("documento")
-        session["user"] = request.form.get("correo")
+        rol_nuevo = request.form.get("rol_usuario")
+        session["rol_usuario"] = rol_nuevo
+        session["numero_documento"] = request.form.get("numero_documento")
+        session["user"] = request.form.get("correo_electronico")
 
         return render_template_string("""
         <h1>RESULTADO DE ACTUALIZACION</h1>
@@ -452,10 +452,10 @@ def formulario_crear():
     <form action="/crear_persona" method="post" enctype="multipart/form-data">
         
         Nro. Documento:
-        <input type="text" name="documento" maxlength="10" pattern="[0-9]+" required><br>
+        <input type="text" name="numero_documento" maxlength="10" pattern="[0-9]+" required><br>
         
         Tipo de documento:
-        <select name="tipo_documento" required>
+        <select name="tipo_documento_identidad" required>
             <option value="">Seleccione</option>
             <option value="TI">Tarjeta de identidad</option>
             <option value="CC">Cedula</option>
@@ -474,7 +474,7 @@ def formulario_crear():
         <input type="date" name="fecha_nacimiento" required><br>
 
         Género:
-        <select name="genero" required>
+        <select name="genero_persona" required>
             <option value="">Seleccione</option>
             <option>Masculino</option>
             <option>Femenino</option>
@@ -483,15 +483,15 @@ def formulario_crear():
         </select><br>
 
         Correo electrónico:
-        <input type="email" name="correo" required><br>
+        <input type="email" name="correo_electronico" required><br>
 
         Celular:
-        <input type="text" name="celular" maxlength="10" pattern="[0-9]{10}" required><br><br>
+        <input type="text" name="numero_celular" maxlength="10" pattern="[0-9]{10}" required><br><br>
                                   
         Foto: <input type="file" name="foto" required><br><br>
                                   
         Rol:
-        <select name="rol" required>
+        <select name="rol_usuario" required>
             <option value="">Seleccione</option>
             <option>admin</option>
             <option>user</option>
