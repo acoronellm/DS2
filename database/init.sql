@@ -49,8 +49,8 @@ FROM personas_registradas;
 -- =========================
 CREATE TABLE logs (
     id SERIAL PRIMARY KEY,
-    tipo_operacion VARCHAR(30),
-    numero_documento VARCHAR(20),
+    tipo_operacion VARCHAR(30) NOT NULL,
+    numero_documento VARCHAR(20) NOT NULL,
     fecha_transaccion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     detalle TEXT
 );
@@ -58,12 +58,12 @@ CREATE TABLE logs (
 -- =========================
 -- ÍNDICES
 -- =========================
-CREATE INDEX idx_logs_tipo
-ON logs(tipo_operacion);
 
-CREATE INDEX idx_logs_documento
-ON logs(numero_documento);
+-- Para búsquedas por tipo + documento
+CREATE INDEX idx_logs_tipo_documento 
+ON logs(tipo_operacion, numero_documento);
 
+-- Para búsquedas por fecha de transacción
 CREATE INDEX idx_logs_fecha
 ON logs(fecha_transaccion);
 
