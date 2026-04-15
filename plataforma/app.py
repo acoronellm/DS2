@@ -110,6 +110,7 @@ def menu():
             <li><a href="/formulario_actualizar">Actualizar persona</a></li>
             <li><a href="/formulario_consultar">Consultar persona</a></li>
             <li><a href="/formulario_eliminar">Eliminar persona</a></li>
+            <li><a href="/llamado_logs">Vista de logs</a></li>
             <li>
                 <form action="/logout" method="post" style="display:inline;">
                     <button type="submit">Cerrar sesión</button>
@@ -199,6 +200,63 @@ def resume_container(name):
         return f"❌ Error: Contenedor '{name}' no existe"
     except Exception as e:
         return f"❌ Error: {str(e)}"
+
+@app.route("/llamado_logs")
+def llamado_logs():
+    return render_template_string("""
+    <h1>Vista de los logs</h1>
+    <form action="/busqueda_logs" method="get">
+        Nro. Documento: <input type="text" name="numero_documento" maxlength="10" pattern="[0-9]+" required><br><br>
+        Tipo de operacion:
+        <select name="tipo_operacion" required>
+            <option value="">Seleccione</option>
+            <option value="CREATE">CREATE</option>
+            <option value="READ">READ</option>
+            <option value="UPDATE">UPDATE</option>
+            <option value="DELETE">DELETE</option>
+        </select><br>
+        <input type="submit" value="Buscar logs">
+    </form>
+    <br>
+    <a href="/menu">⬅ Volver al menú</a>
+    """)
+
+@app.route("/busqueda_logs", methods=["GET"])
+def busqueda_logs():
+    numero_documento = request.args.get("numero_documento")
+    tipo_operacion = request.args.get("tipo_operacion")
+    try:
+        response = requests.get(f"{OP_READ_URL}/obtener_logs/{numero_documento}/{tipo_operacion}")
+        logs = response.json().get("logs", []) if response.status_code == 200 else []
+        return render_template_string("""
+        <h1>RESULTADO DE LA BÚSQUEDA DE LOGS</h1>
+
+        {% if logs %}
+            <table border="1">
+                <tr>
+                    <th>Tipo</th>
+                    <th>Documento</th>
+                    <th>Fecha</th>
+                    <th>Detalle</th>
+                </tr>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.tipo_operacion }}</td>
+                    <td>{{ log.numero_documento }}</td>
+                    <td>{{ log.fecha_transaccion }}</td>
+                    <td>{{ log.detalle }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p style="color:red;"><strong>No se encontraron logs</strong></p>
+        {% endif %}
+        <br>
+        <a href="/llamado_logs">⬅ Realizar otra búsqueda de logs</a><br>
+        <a href="/menu">⬅ Volver al menú</a>
+        """, logs=logs)
+    except Exception as e:
+        return f"❌ Error conectando con el microservicio: {str(e)}"
 
 @app.route("/formulario_eliminar")
 def formulario_eliminar():

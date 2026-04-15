@@ -51,7 +51,7 @@ CREATE TABLE logs (
     id SERIAL PRIMARY KEY,
     tipo_operacion VARCHAR(30) NOT NULL,
     numero_documento VARCHAR(20) NOT NULL,
-    fecha_transaccion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_transaccion DATE DEFAULT CURRENT_DATE,
     detalle TEXT
 );
 
@@ -66,6 +66,9 @@ ON logs(tipo_operacion, numero_documento);
 -- Para búsquedas por fecha de transacción
 CREATE INDEX idx_logs_fecha
 ON logs(fecha_transaccion);
+
+INSERT INTO logs (tipo_operacion, numero_documento, fecha_transaccion, detalle) VALUES 
+('CREATE', '777', CURRENT_DATE, 'Se creó la persona con número de documento 777.');
 
 -- =========================
 -- DATO DE PRUEBA
@@ -95,3 +98,4 @@ INSERT INTO personas_registradas (
     '777.jpg',
     'admin'
 );
+
