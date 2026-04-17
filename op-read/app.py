@@ -27,6 +27,39 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
+@app.route("/obtener_logs2/<fecha_transaccion>", methods=["GET"])
+def obtener_logs2(fecha_transaccion):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT tipo_operacion, numero_documento, fecha_transaccion, detalle
+            FROM logs
+            WHERE fecha_transaccion = %s
+        """, (fecha_transaccion))
+
+        logs = cur.fetchall()
+
+        if logs:
+            log_list = [
+                {
+                    "tipo_operacion": log[0],
+                    "numero_documento": log[1],
+                    "fecha_transaccion": str(log[2]),  # convertir DATE a string
+                    "detalle": log[3]
+                }
+                for log in logs
+            ]
+            cur.close()
+            conn.close()
+            return {"logs": log_list}, 200
+        else:
+            return {"mensaje": "No se encontraron logs"}, 404
+
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @app.route("/obtener_logs/<numero_documento>/<tipo_operacion>", methods=["GET"])
 def obtener_logs(numero_documento, tipo_operacion):
     try:

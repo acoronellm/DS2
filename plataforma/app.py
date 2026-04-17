@@ -215,7 +215,12 @@ def llamado_logs():
             <option value="UPDATE">UPDATE</option>
             <option value="DELETE">DELETE</option>
         </select><br>
-        <input type="submit" value="Buscar logs">
+        <input type="submit" value="Buscar logs (por documento y tipo)">
+    </form>
+    <form action="/busqueda_logs2" method="get">
+        Fecha de transaccion:
+        <input type="date" name="fecha_transaccion" required><br><br>
+        <input type="submit" value="Buscar logs (por fecha)">
     </form>
     <br>
     <a href="/menu">⬅ Volver al menú</a>
@@ -227,6 +232,42 @@ def busqueda_logs():
     tipo_operacion = request.args.get("tipo_operacion")
     try:
         response = requests.get(f"{OP_READ_URL}/obtener_logs/{numero_documento}/{tipo_operacion}")
+        logs = response.json().get("logs", []) if response.status_code == 200 else []
+        return render_template_string("""
+        <h1>RESULTADO DE LA BÚSQUEDA DE LOGS</h1>
+
+        {% if logs %}
+            <table border="1">
+                <tr>
+                    <th>Tipo</th>
+                    <th>Documento</th>
+                    <th>Fecha</th>
+                    <th>Detalle</th>
+                </tr>
+                {% for log in logs %}
+                <tr>
+                    <td>{{ log.tipo_operacion }}</td>
+                    <td>{{ log.numero_documento }}</td>
+                    <td>{{ log.fecha_transaccion }}</td>
+                    <td>{{ log.detalle }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p style="color:red;"><strong>No se encontraron logs</strong></p>
+        {% endif %}
+        <br>
+        <a href="/llamado_logs">⬅ Realizar otra búsqueda de logs</a><br>
+        <a href="/menu">⬅ Volver al menú</a>
+        """, logs=logs)
+    except Exception as e:
+        return f"❌ Error conectando con el microservicio: {str(e)}"
+    
+@app.route("/busqueda_logs2", methods=["GET"])
+def busqueda_logs2():
+    fecha_transaccion = request.args.get("fecha_transaccion")
+    try:
+        response = requests.get(f"{OP_READ_URL}/obtener_logs2/{fecha_transaccion}")
         logs = response.json().get("logs", []) if response.status_code == 200 else []
         return render_template_string("""
         <h1>RESULTADO DE LA BÚSQUEDA DE LOGS</h1>
