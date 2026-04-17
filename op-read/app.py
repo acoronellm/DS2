@@ -27,6 +27,8 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
+from datetime import datetime
+
 @app.route("/obtener_logs2/<fecha_transaccion>", methods=["GET"])
 def obtener_logs2(fecha_transaccion):
     try:
@@ -36,21 +38,29 @@ def obtener_logs2(fecha_transaccion):
         cur.execute("""
             SELECT tipo_operacion, numero_documento, fecha_transaccion, detalle
             FROM logs
-            WHERE fecha_transaccion = %s
-        """, (fecha_transaccion))
+            WHERE DATE(fecha_transaccion) = %s
+        """, (fecha_transaccion,))
 
         logs = cur.fetchall()
 
         if logs:
-            log_list = [
-                {
+            log_list = []
+
+            for log in logs:
+                fecha_raw = log[2]
+
+                if fecha_raw:
+                    fecha_final = fecha_raw.strftime("%Y-%m-%d")
+                else:
+                    fecha_final = None
+
+                log_list.append({
                     "tipo_operacion": log[0],
                     "numero_documento": log[1],
-                    "fecha_transaccion": str(log[2]),  # convertir DATE a string
+                    "fecha_transaccion": fecha_final,
                     "detalle": log[3]
-                }
-                for log in logs
-            ]
+                })
+
             cur.close()
             conn.close()
             return {"logs": log_list}, 200
