@@ -103,8 +103,62 @@ def obtener_logs(numero_documento, tipo_operacion):
     except Exception as e:
         return {"error": str(e)}, 500
 
-@app.route("/obtener_persona/<numero_documento>", methods=["GET"])
-def obtener_persona(numero_documento):
+@app.route("/obtener_persona1/<numero_documento>/<documento>", methods=["GET"])
+def obtener_persona1(numero_documento, documento):
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        cur.execute("SELECT * FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
+        persona = cur.fetchone()
+        if persona:
+            persona_dict = {
+                "numero_documento": persona[0],
+                "tipo_documento_identidad": persona[1],
+                "primer_nombre": persona[2],
+                "segundo_nombre": persona[3],
+                "apellidos": persona[4],
+                "fecha_nacimiento": persona[5],
+                "genero_persona": persona[6],
+                "correo_electronico": persona[7],
+                "numero_celular": persona[8],
+                "url_foto_perfil": persona[9],
+                "rol_usuario": persona[10]
+            }
+
+            # 🔥 Manejo seguro de fecha
+            fecha_raw = persona_dict["fecha_nacimiento"]
+
+            if fecha_raw:
+                if isinstance(fecha_raw, str):
+                    fecha_obj = datetime.strptime(fecha_raw, "%a, %d %b %Y %H:%M:%S %Z")
+                else:
+                    fecha_obj = fecha_raw  # ya es datetime
+
+                persona_dict["fecha_nacimiento"] = fecha_obj.strftime("%Y-%m-%d")
+
+            # Insertar en tabla de logs
+            cur.execute("""
+            INSERT INTO logs (
+                        tipo_operacion, numero_documento, fecha_transaccion, detalle
+                        ) VALUES (%s, %s, NOW(), %s)
+                        """, ("READ", documento, f"La persona {persona[2]} {persona[3]} {persona[4]} con número de documento {persona[0]} fue consultada"))
+            conn.commit()
+
+            cur.close()
+            conn.close()
+            return persona_dict, 200
+        else:
+            persona_dict = None
+            cur.close()
+            conn.close()
+            return "❌ No se encontró una persona con ese documento", 400
+        
+    except Exception as e:
+        return f"❌ Error conectando con el microservicio: {str(e)}"
+    
+@app.route("/obtener_persona/<numero_documento>/<documento>", methods=["GET"])
+def obtener_persona(numero_documento, documento):
     try:
         conn = get_connection()
         cur = conn.cursor()

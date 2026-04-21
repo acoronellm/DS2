@@ -72,8 +72,8 @@ def obtener_persona(numero_documento):
     except Exception as e:
         return f"❌ Error conectando con el microservicio: {str(e)}"
     
-@app.route("/actualizar_persona", methods=["POST"])
-def actualizar_persona():
+@app.route("/actualizar_persona/<documento>", methods=["POST"])
+def actualizar_persona(documento):
     try:
         # Extraer datos del formulario
         tipo_documento_identidad = request.form['tipo_documento_identidad']
@@ -139,10 +139,46 @@ def actualizar_persona():
         ))
 
         conn.commit()
+
+        tipo_documento_identidad2 = request.form['tipo_documento_identidad2']
+        primer_nombre2 = request.form['primer_nombre2']
+        segundo_nombre2 = request.form['segundo_nombre2']
+        apellidos2 = request.form['apellidos2']
+        fecha_nacimiento2 = request.form['fecha_nacimiento2']
+        genero_persona2 = request.form['genero_persona2']
+        correo_electronico2 = request.form['correo_electronico2']
+        numero_celular2 = request.form['numero_celular2']
+
+        texto = "Se hicieron las siguientes modificaciones:\n"
+        if tipo_documento_identidad != tipo_documento_identidad2:
+            texto += f"Tipo de documento: {tipo_documento_identidad2} -> {tipo_documento_identidad}\n"
+        if primer_nombre != primer_nombre2:
+            texto += f"Primer nombre: {primer_nombre2} -> {primer_nombre}\n"
+        if segundo_nombre != segundo_nombre2:
+            texto += f"Segundo nombre: {segundo_nombre2} -> {segundo_nombre}\n"
+        if apellidos != apellidos2:
+            texto += f"Apellidos: {apellidos2} -> {apellidos}\n"
+        if fecha_nacimiento != fecha_nacimiento2:
+            texto += f"Fecha de nacimiento: {fecha_nacimiento2} -> {fecha_nacimiento}\n"
+        if genero_persona != genero_persona2:
+            texto += f"Género: {genero_persona2} -> {genero_persona}\n"
+        if correo_electronico != correo_electronico2:
+            texto += f"Correo electrónico: {correo_electronico2} -> {correo_electronico}\n"
+        if numero_celular != numero_celular2:
+            texto += f"Celular: {numero_celular2} -> {numero_celular}\n"
+
+        # Insertar en tabla de logs
+        cur.execute("""
+        INSERT INTO logs (
+                    tipo_operacion, numero_documento, fecha_transaccion, detalle
+                    ) VALUES (%s, %s, NOW(), %s)
+                    """, ("UPDATE", documento, texto))
+        conn.commit()
+
         cur.close()
         conn.close()
 
-        return f"✅ Persona {primer_nombre} actualizada correctamente."
+        return f"✅ Persona {primer_nombre} {segundo_nombre} {apellidos} actualizada correctamente."
 
     except Exception as e:
         return f"❌ Error interno: {str(e)}", 500

@@ -27,8 +27,8 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
-@app.route("/eliminar_persona/<numero_documento>", methods=["GET"])
-def eliminar_persona(numero_documento):
+@app.route("/eliminar_persona/<numero_documento>/<documento>", methods=["GET"])
+def eliminar_persona(numero_documento, documento):
     try:
         conn = get_connection()
         cur = conn.cursor()
@@ -48,6 +48,15 @@ def eliminar_persona(numero_documento):
 
         cur.execute("DELETE FROM personas_registradas WHERE numero_documento = %s", (numero_documento,))
         conn.commit()
+
+        # Insertar en tabla de logs
+        cur.execute("""
+        INSERT INTO logs (
+                    tipo_operacion, numero_documento, fecha_transaccion, detalle
+                    ) VALUES (%s, %s, NOW(), %s)
+                    """, ("DELETE", documento, f"La persona con número de documento {numero_documento} fue eliminada"))
+        conn.commit()
+
         cur.close()
         conn.close()
 

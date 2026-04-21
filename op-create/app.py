@@ -30,8 +30,8 @@ def get_connection():
 
 BUCKET = "fotos-personas"
 
-@app.route("/crear_persona", methods=["POST"])
-def crear_persona():
+@app.route("/crear_persona/<documento>", methods=["POST"])
+def crear_persona(documento):
     try:
         # Extraer datos del formulario
         tipo_documento_identidad = request.form['tipo_documento_identidad']
@@ -64,6 +64,17 @@ def crear_persona():
             conn.close()
             return "❌ Ya existe una persona con ese documento", 400
 
+        res = requests.post(
+            f"{AUTH_SERVICE_URL}/signup",
+            json={
+                "email": correo_electronico,
+                "password": password,
+                "name": primer_nombre + " " + segundo_nombre + " " + apellidos
+            }
+        )
+        if res.status_code not in [200, 201]:
+            return f"❌ Error creando usuario (ROBLE): {res.text}", 400
+
         # Asegurar bucket en MinIO
         if not client.bucket_exists(BUCKET):
             client.make_bucket(BUCKET)
@@ -90,20 +101,18 @@ def crear_persona():
         ))
 
         conn.commit()
+
+        # Insertar en tabla de logs
+        cur.execute("""
+        INSERT INTO logs (
+                    tipo_operacion, numero_documento, fecha_transaccion, detalle
+                    ) VALUES (%s, %s, NOW(), %s)
+                    """, ("CREATE", documento, f"Se creo la persona {primer_nombre} {segundo_nombre} {apellidos} con rol {rol_usuario}"))
+        conn.commit()
+
         cur.close()
         conn.close()
         creado_en_postgres = True
-
-        res = requests.post(
-            f"{AUTH_SERVICE_URL}/signup",
-            json={
-                "email": correo_electronico,
-                "password": password,
-                "name": primer_nombre + " " + segundo_nombre + " " + apellidos
-            }
-        )
-        if res.status_code not in [200, 201]:
-            return f"❌ Error creando usuario (ROBLE): {res.text}", 400
 
         return f"✅ Persona {primer_nombre} creada correctamente."
 

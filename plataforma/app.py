@@ -119,6 +119,11 @@ def menu():
         </ul>
     {% else %}
         <li><a href="/formulario_actualizar">Actualizar persona</a></li>
+        <li>
+            <form action="/logout" method="post" style="display:inline;">
+                <button type="submit">Cerrar sesión</button>
+            </form>
+        </li>
     {% endif %}
     """, rol_usuario=session.get("rol_usuario"), email=session.get("user", "Invitado"), accessToken=session.get("accessToken"), refreshToken=session.get("refreshToken"))
 
@@ -158,6 +163,19 @@ def pause_container(container_name):
         container = client.containers.get(container_name)
         container.pause()
         app.consultar_status = False
+        try:
+            conn = get_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO logs (
+                            tipo_operacion, numero_documento, fecha_transaccion, detalle
+                            ) VALUES (%s, %s, NOW(), %s)
+                            """, ("READ", session.get("numero_documento", ""), "El contenedor de consulta fue pausado"))
+            conn.commit()
+            cur.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error registrando log de pausa: {str(e)}")
         return f"⏸️ Contenedor '{container_name}' pausado exitosamente."
     except docker.errors.NotFound:
         return f"ERROR\nEl contenedor '{container_name}' no existe."
@@ -183,11 +201,37 @@ def resume_container(name):
         if container.status == "paused":
             container.unpause()
             app.consultar_status = True
+            try:
+                conn = get_connection()
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO logs (
+                                tipo_operacion, numero_documento, fecha_transaccion, detalle
+                                ) VALUES (%s, %s, NOW(), %s)
+                                """, ("READ", session.get("numero_documento", ""), "El contenedor de consulta fue reanudado"))
+                conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error registrando log de reanudación: {str(e)}")
             return f"▶️ Contenedor '{name}' reanudado exitosamente."
 
         if container.status in ["exited", "dead", "created", "stopped"]:
             container.start()
             app.consultar_status = True
+            try:
+                conn = get_connection()
+                cur = conn.cursor()
+                cur.execute("""
+                    INSERT INTO logs (
+                                tipo_operacion, numero_documento, fecha_transaccion, detalle
+                                ) VALUES (%s, %s, NOW(), %s)
+                                """, ("READ", session.get("numero_documento", ""), "El contenedor de consulta fue reanudado"))
+                conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                print(f"Error registrando log de reanudación: {str(e)}")
             return f"▶️ Contenedor '{name}' iniciado exitosamente."
 
         if container.status == "running":
@@ -315,7 +359,8 @@ def formulario_eliminar():
 def eliminar_persona():
     try:
         numero_documento = request.args.get("numero_documento")
-        response = requests.get(f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}")
+        documento=session.get("numero_documento", "")
+        response = requests.get(f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}/{documento}")
         return render_template_string("""
         <h1>RESULTADO DE LA ELIMINACIÓN</h1>
         <p>{{ mensaje }}</p>
@@ -388,7 +433,8 @@ def consultar_persona():
 
 def obtener_persona1(numero_documento):
     try:
-        response = requests.get(f"{OP_READ_URL}/obtener_persona/{numero_documento}")
+        documento=session.get("numero_documento", "")
+        response = requests.get(f"{OP_READ_URL}/obtener_persona1/{numero_documento}/{documento}")
         if response.status_code == 200:
             return response.json()
         else:
@@ -422,7 +468,7 @@ def formulario_actualizar():
                                     
             Nro. Documento:
             <input type="text" name="numero_documento" value="{{ persona.numero_documento if persona else '' }}" readonly><br>
-
+                                  
             Tipo de documento:
             <select name="tipo_documento_identidad" required>
                 <option value="">Seleccione</option>
@@ -435,18 +481,24 @@ def formulario_actualizar():
                     Cédula
                 </option>
             </select><br>
+            <input type="hidden" name="tipo_documento_identidad2" value="{{ persona.tipo_documento_identidad if persona else '' }}">
                                     
             Primer Nombre:
             <input type="text" name="primer_nombre" value="{{ persona.primer_nombre if persona else '' }}" maxlength="30" pattern="[A-Za-z ]+" required><br>
-
+            <input type="hidden" name="primer_nombre2" value="{{ persona.primer_nombre if persona else '' }}">
+                                  
             Segundo Nombre:
             <input type="text" name="segundo_nombre" value="{{ persona.segundo_nombre if persona else '' }}" maxlength="30" pattern="[A-Za-z ]+"><br>
-
+            <input type="hidden" name="segundo_nombre2" value="{{ persona.segundo_nombre if persona else '' }}">
+                                  
             Apellidos:
             <input type="text" name="apellidos" value="{{ persona.apellidos if persona else '' }}" maxlength="60" pattern="[A-Za-z ]+" required><br>
-
-            Fecha Nacimiento: <input type="date" name="fecha_nacimiento" value="{{ persona.fecha_nacimiento if persona else '' }}" required><br>
-
+            <input type="hidden" name="apellidos2" value="{{ persona.apellidos if persona else '' }}">
+                                  
+            Fecha Nacimiento:
+            <input type="date" name="fecha_nacimiento" value="{{ persona.fecha_nacimiento if persona else '' }}" required><br>
+            <input type="hidden" name="fecha_nacimiento2" value="{{ persona.fecha_nacimiento if persona else '' }}">
+                                  
             Genero:
             <select name="genero_persona" required>
                 <option value="">Seleccione</option>
@@ -467,15 +519,18 @@ def formulario_actualizar():
                     Prefiero no reportar
                 </option>
             </select><br>
+            <input type="hidden" name="genero_persona2" value="{{ persona.genero_persona if persona else '' }}">
 
             Correo electrónico:
             <input type="email" name="correo_electronico" value="{{ persona.correo_electronico if persona else '' }}" required><br>
-
+            <input type="hidden" name="correo_electronico2" value="{{ persona.correo_electronico if persona else '' }}">
+                                  
             Celular:
             <input type="text" name="numero_celular" value="{{ persona.numero_celular if persona else '' }}" maxlength="10" pattern="[0-9]{10}" required><br><br>
-
+            <input type="hidden" name="numero_celular2" value="{{ persona.numero_celular if persona else '' }}">
+                                  
             <input type="hidden" name="foto_actual" value="{{ persona.url_foto_perfil }}">
-
+                                  
             {% if persona and persona.url_foto_perfil %}
             <p><strong>Foto actual:</strong></p>
             <img src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}" width="200"><br>
@@ -521,9 +576,9 @@ def actualizar_persona():
                 request.files['foto'],
                 request.files['foto'].content_type
             )
-
+        documento=session.get("numero_documento", "")
         response = requests.post(
-            f"{OP_UPDATE_URL}/actualizar_persona",
+            f"{OP_UPDATE_URL}/actualizar_persona/{documento}",
             data=request.form,
             files=files
         )
@@ -608,9 +663,9 @@ def formulario_crear():
 @app.route("/crear_persona", methods=["POST"])
 def crear_persona():
     try:
-        
+        documento=session.get("numero_documento", "")
         response = requests.post(
-            f"{OP_CREATE_URL}/crear_persona",
+            f"{OP_CREATE_URL}/crear_persona/{documento}",
             data=request.form,
             files={
                 "foto": (
