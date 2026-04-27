@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
+</head>
+<body>
+
+    <div class="login-page">
+
+        <div class="decor decor-top"></div>
+        <div class="decor decor-bottom"></div>
+
+        <div class="login-scene">
+
+            <div class="login-box floating-card">
+                <h2>Login</h2>
+
+                {% if error %}
+                    <p class="error-message">{{ error }}</p>
+                {% endif %}
+
+                <form action="{{ url_for('login') }}" method="post">
+
+                    <div class="input-row">
+                        <img src="{{ url_for('static', filename='estilos/iconos/correo.png') }}" class="menu-icon">
+                        <input type="email" name="email" placeholder="Ingresar correo" required>
+                    </div>
+
+                    <div class="input-row">
+                        <img src="{{ url_for('static', filename='estilos/iconos/contraseña.png') }}" class="menu-icon">
+                        <input type="password" name="password" placeholder="Ingresar contraseña" required>
+                    </div>
+
+                    <button type="submit" class="login-button">↪ LOG IN</button>
+
+                </form>
+            </div>
+
+            <div class="welcome-panel">
+                <div class="circle circle-one"></div>
+                <div class="circle circle-two"></div>
+                <div class="circle circle-three"></div>
+
+                <div class="welcome-content">
+                    <h1>BIENVENIDO</h1>
+                    <p>Ingresa tus datos</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar persona</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
+</head>
+<body>
+
+<div class="dashboard-page">
+    <div class="dashboard-card">
+
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle">
+
+        <aside class="sidebar collapsed">
+            <label for="sidebarToggle" class="toggle-btn">↗</label>
+
+            <nav class="sidebar-menu">
+                <a href="/menu" title="Panel principal">
+                    <img src="{{ url_for('static', filename='estilos/iconos/casa.png') }}" class="menu-icon">
+                    <span class="menu-text">Panel principal</span>
+                </a>
+
+                <a href="/formulario_crear" title="Crear persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
+                    <span class="menu-text">Crear persona</span>
+                </a>
+
+                <a href="/formulario_actualizar" title="Actualizar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
+                    <span class="menu-text">Actualizar persona</span>
+                </a>
+
+                <a href="/formulario_consultar" title="Consultar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
+                    <span class="menu-text">Consultar persona</span>
+                </a>
+
+                <a href="/formulario_eliminar" title="Eliminar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
+                    <span class="menu-text">Eliminar persona</span>
+                </a>
+
+                <a href="/llamado_logs" title="Vista de logs">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
+                    <span class="menu-text">Vista de logs</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-content">
+
+            <div class="topbar">
+                <div>
+                    <h1>Consultar persona</h1>
+                    <p>Busca una persona por número de documento</p>
+                </div>
+            </div>
+
+            <section class="consult-search-box">
+
+                {% if status %}
+
+                    <div class="consult-search-card">
+                        <h2>Buscar datos personales</h2>
+                        <p>Ingresa el número de documento que deseas consultar.</p>
+
+                        <form action="{{ url_for('consultar_persona') }}" method="get" class="consult-search-form">
+                            <div class="field-box">
+                                <label>Número de documento</label>
+                                <input type="text" name="numero_documento" maxlength="10" pattern="[0-9]+" required>
+                            </div>
+
+                            <button type="submit" class="primary-btn search-person-btn">
+                                Consultar persona
+                            </button>
+                        </form>
+                    </div>
+
+                {% else %}
+
+                    <div class="empty-message">
+                        <p>El microservicio de consulta no está disponible</p>
+                    </div>
+
+                {% endif %}
+
+                <div class="service-actions consult-service-actions">
+                    <form action="{{ url_for('pause_route') }}" method="post">
+                        <input type="hidden" name="container_name" value="op-read">
+                        <button type="submit" class="warning-btn">Pausar consulta</button>
+                    </form>
+
+                    <form action="{{ url_for('resume_route') }}" method="post">
+                        <input type="hidden" name="container_name" value="op-read">
+                        <button type="submit" class="success-btn">Reanudar consulta</button>
+                    </form>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+</div>
+
+</body>
+</html>

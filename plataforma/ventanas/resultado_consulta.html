@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar persona</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
+</head>
+<body>
+
+<div class="dashboard-page">
+    <div class="dashboard-card">
+
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar collapsed">
+
+            <label for="sidebarToggle" class="toggle-btn">↗</label>
+
+            <nav class="sidebar-menu">
+
+                <a href="/menu">
+                    <img src="{{ url_for('static', filename='estilos/iconos/casa.png') }}" class="menu-icon">
+                    <span class="menu-text">Panel principal</span>
+                </a>
+
+                <a href="/formulario_crear">
+                    <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
+                    <span class="menu-text">Crear persona</span>
+                </a>
+
+                <a href="/formulario_actualizar">
+                    <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
+                    <span class="menu-text">Actualizar persona</span>
+                </a>
+
+                <a href="/formulario_consultar">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
+                    <span class="menu-text">Consultar persona</span>
+                </a>
+
+                <a href="/formulario_eliminar">
+                    <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
+                    <span class="menu-text">Eliminar persona</span>
+                </a>
+
+                <a href="/llamado_logs">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
+                    <span class="menu-text">Vista de logs</span>
+                </a>
+
+            </nav>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="dashboard-content">
+
+            <div class="topbar">
+                <div>
+                    <h1>Consulta de persona</h1>
+                    <p>Resultado de la búsqueda</p>
+                </div>
+            </div>
+
+            {% if persona %}
+
+            <section class="consult-box">
+
+                <div class="consult-layout">
+
+                    <!-- DATOS -->
+                    <div class="consult-left">
+
+                        <h2>Información del usuario</h2>
+
+                        <div class="consult-grid">
+
+                            <div class="consult-item">
+                                <span>Número de documento</span>
+                                <strong>{{ persona.numero_documento }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Tipo de documento</span>
+                                <strong>{{ persona.tipo_documento_identidad }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Primer nombre</span>
+                                <strong>{{ persona.primer_nombre }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Segundo nombre</span>
+                                <strong>{{ persona.segundo_nombre }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Apellidos</span>
+                                <strong>{{ persona.apellidos }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Género</span>
+                                <strong>{{ persona.genero_persona }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Celular</span>
+                                <strong>{{ persona.numero_celular }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Fecha de nacimiento</span>
+                                <strong>{{ persona.fecha_nacimiento }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Correo electrónico</span>
+                                <strong>{{ persona.correo_electronico }}</strong>
+                            </div>
+
+                            <div class="consult-item">
+                                <span>Tipo de usuario</span>
+                                <strong>{{ persona.rol_usuario }}</strong>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- FOTO -->
+                    <div class="consult-right">
+
+                        <div class="profile-card">
+
+                            <h3>Foto de perfil</h3>
+
+                            {% if persona.url_foto_perfil %}
+                                <div class="photo-preview big-photo-preview">
+                                    <img src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}">
+                                </div>
+                            {% else %}
+                                <div class="photo-placeholder">
+                                    Sin foto
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            {% else %}
+
+            <section class="summary-box">
+                <h2>No se encontró la persona</h2>
+                <p>No existe información con ese documento.</p>
+            </section>
+
+            {% endif %}
+
+            <div class="consult-actions">
+                <a href="{{ url_for('formulario_consultar') }}" class="primary-btn">Nueva consulta</a>
+            </div>
+
+        </main>
+
+    </div>
+</div>
+
+</body>
+</html>

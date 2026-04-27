@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultado logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
+</head>
+<body>
+
+<div class="dashboard-page">
+    <div class="dashboard-card">
+
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle">
+
+        <aside class="sidebar collapsed">
+            <label for="sidebarToggle" class="toggle-btn">↗</label>
+
+            <nav class="sidebar-menu">
+                <a href="/menu" title="Panel principal">
+                    <img src="{{ url_for('static', filename='estilos/iconos/casa.png') }}" class="menu-icon">
+                    <span class="menu-text">Panel principal</span>
+                </a>
+
+                <a href="/formulario_crear" title="Crear persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
+                    <span class="menu-text">Crear persona</span>
+                </a>
+
+                <a href="/formulario_actualizar" title="Actualizar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
+                    <span class="menu-text">Actualizar persona</span>
+                </a>
+
+                <a href="/formulario_consultar" title="Consultar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
+                    <span class="menu-text">Consultar persona</span>
+                </a>
+
+                <a href="/formulario_eliminar" title="Eliminar persona">
+                    <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
+                    <span class="menu-text">Eliminar persona</span>
+                </a>
+
+                <a href="/llamado_logs" title="Vista de logs">
+                    <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
+                    <span class="menu-text">Vista de logs</span>
+                </a>
+            </nav>
+        </aside>
+
+        <main class="dashboard-content">
+
+            <div class="topbar">
+                <div>
+                    <h1>Resultado de logs</h1>
+                    <p>Registros encontrados en el sistema</p>
+                </div>
+            </div>
+
+            <section class="logs-result-box">
+
+                {% if logs %}
+
+                    <div class="logs-table-card">
+                        <div class="table-container">
+                            <table class="logs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Documento</th>
+                                        <th>Fecha</th>
+                                        <th>Detalle</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    {% for log in logs %}
+                                    <tr>
+                                        <td><span class="log-badge">{{ log.tipo_operacion }}</span></td>
+                                        <td>{{ log.numero_documento }}</td>
+                                        <td>{{ log.fecha_transaccion }}</td>
+                                        <td>{{ log.detalle }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                {% else %}
+
+                    <div class="logs-empty-card">
+                        <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="logs-main-icon">
+                        <h2>No se encontraron logs</h2>
+                        <p>No hay registros que coincidan con la búsqueda realizada.</p>
+                    </div>
+
+                {% endif %}
+
+                <div class="logs-actions">
+                    <a href="{{ url_for('llamado_logs') }}" class="primary-btn">Nueva búsqueda</a>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+</div>
+
+</body>
+</html>

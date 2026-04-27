@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menú principal</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='estilos/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="dashboard-page">
+      <div class="dashboard-card">
+        <aside
+          class="sidebar {% if vista != 'inicio' %}collapsed{% endif %}"
+          id="sidebar"
+        >
+          <button class="toggle-btn" type="button" onclick="toggleSidebar()">
+            ↗
+          </button>
+
+          <h2 class="brand">
+            <span class="brand-full">Personas</span>
+          </h2>
+
+          <nav class="sidebar-menu">
+            {% if rol_usuario == "admin" %}
+
+            <a href="/formulario_crear" title="Crear persona">
+              <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
+              <span class="menu-text">Crear persona</span>
+            </a>
+
+            <a href="/formulario_actualizar" title="Actualizar persona">
+              <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
+              <span class="menu-text">Actualizar persona</span>
+            </a>
+
+            <a href="/formulario_consultar" title="Consultar persona">
+              <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
+              <span class="menu-text">Consultar persona</span>
+            </a>
+
+            <a href="/formulario_eliminar" title="Eliminar persona">
+              <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
+              <span class="menu-text">Eliminar persona</span>
+            </a>
+
+            <a href="/llamado_logs" title="Vista de logs">
+              <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
+              <span class="menu-text">Vista de logs</span>
+            </a>
+
+            {% else %}
+
+            <a href="/formulario_actualizar" title="Actualizar persona">
+              <span class="menu-icon">✏️</span>
+              <span class="menu-text">Actualizar persona</span>
+            </a>
+
+            {% endif %}
+          </nav>
+
+          <form action="/logout" method="post" class="logout-form">
+            <button type="submit" title="Cerrar sesión">
+              <img src="{{ url_for('static', filename='estilos/iconos/salida.png') }}" class="menu-icon">
+              <span class="menu-text">Cerrar sesión</span>
+            </button>
+          </form>
+        </aside>
+
+        <main class="dashboard-content">
+          <div class="topbar">
+            <div>
+              {% if vista == "crear" %}
+              <h1>Creación de persona</h1>
+              {% elif vista == "actualizar" %}
+              <h1>Actualizar persona</h1>
+              {% elif vista == "consultar" %}
+              <h1>Consultar persona</h1>
+              {% elif vista == "eliminar" %}
+              <h1>Eliminar persona</h1>
+              {% elif vista == "logs" %}
+              <h1>Vista de logs</h1>
+              {% else %}
+              <h1>Menú principal</h1>
+              {% endif %}
+
+              <p>Bienvenido, {{ email }}</p>
+            </div>
+          </div>
+
+          {% if vista == "crear" %}
+
+          <section class="dashboard-form-box">
+            <h2>Creación de persona</h2>
+            <p class="form-subtitle">
+              Registra los datos personales del usuario
+            </p>
+
+            <form
+              action="{{ url_for('crear_persona') }}"
+              method="post"
+              enctype="multipart/form-data"
+              class="person-form"
+            >
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Nro. Documento</label>
+                  <input
+                    type="text"
+                    name="numero_documento"
+                    maxlength="10"
+                    pattern="[0-9]+"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Tipo de documento</label>
+                  <select name="tipo_documento_identidad" required>
+                    <option value="">Seleccione</option>
+                    <option value="TI">Tarjeta de identidad</option>
+                    <option value="CC">Cédula</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Primer nombre</label>
+                  <input
+                    type="text"
+                    name="primer_nombre"
+                    maxlength="30"
+                    pattern="[A-Za-z ]+"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Segundo nombre</label>
+                  <input
+                    type="text"
+                    name="segundo_nombre"
+                    maxlength="30"
+                    pattern="[A-Za-z ]+"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Apellidos</label>
+                  <input
+                    type="text"
+                    name="apellidos"
+                    maxlength="60"
+                    pattern="[A-Za-z ]+"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Fecha de nacimiento</label>
+                  <input type="date" name="fecha_nacimiento" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Género</label>
+                  <select name="genero_persona" required>
+                    <option value="">Seleccione</option>
+                    <option>Masculino</option>
+                    <option>Femenino</option>
+                    <option>No binario</option>
+                    <option>Prefiero no reportar</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Correo electrónico</label>
+                  <input type="email" name="correo_electronico" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Celular</label>
+                  <input
+                    type="text"
+                    name="numero_celular"
+                    maxlength="10"
+                    pattern="[0-9]{10}"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Rol</label>
+                  <select name="rol_usuario" required>
+                    <option value="">Seleccione</option>
+                    <option>admin</option>
+                    <option>user</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label>Contraseña</label>
+                  <input type="password" name="password" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Foto</label>
+                  <input type="file" name="foto" required />
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="primary-btn">
+                  Guardar persona
+                </button>
+              </div>
+            </form>
+          </section>
+
+          {% else %}
+
+          <section class="summary-box">
+            <h2>Panel de administración</h2>
+            <p>Selecciona una opción del menú lateral para continuar.</p>
+          </section>
+
+          {% endif %}
+        </main>
+      </div>
+    </div>
+
+    <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("collapsed");
+      }
+    </script>
+  </body>
+</html>
