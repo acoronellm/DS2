@@ -1,8 +1,12 @@
 #!/bin/sh
 
-echo "Esperando n8n..."
+echo "Iniciando n8n en segundo plano..."
+n8n start &
 
-while ! wget -qO- http://localhost:5678 >/dev/null 2>&1; do
+echo "Esperando a que n8n levante..."
+
+while ! wget -qO- http://localhost:5678 >/dev/null 2>&1
+do
   sleep 2
 done
 
@@ -14,5 +18,7 @@ n8n import:workflow --input=/workflows/text-flow.json
 echo "Importando credenciales..."
 n8n import:credentials --input=/credentials.json
 
-echo "Iniciando n8n..."
-exec n8n startpor 
+echo "Reiniciando n8n en modo principal..."
+pkill node
+
+exec n8n start
