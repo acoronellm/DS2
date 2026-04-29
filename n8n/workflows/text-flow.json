@@ -1,5 +1,5 @@
 {
-  "name": "My workflow 2",
+  "name": "WorkflowVersion con trycatch",
   "nodes": [
     {
       "parameters": {
@@ -8,85 +8,28 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.1,
       "position": [
-        800,
-        60
+        -780,
+        280
       ],
-      "id": "a6044030-d1bf-43a1-8a33-914fa776c54c",
+      "id": "7e9759c0-7a73-43d1-ad6e-b59f281d3c00",
       "name": "When chat message received",
       "webhookId": "20cf5885-9bc8-4fad-bc83-2a879d8537ea"
     },
     {
       "parameters": {
         "promptType": "define",
-        "text": "Eres un asistente que consulta una base de datos PostgreSQL usando la herramienta consultar_bd.\n\nTu tarea:\n- Convertir preguntas en lenguaje natural a consultas SQL.\n- Ejecutar siempre la SQL usando la herramienta consultar_bd.\n- Analizar los resultados devueltos por la herramienta y responder en lenguaje natural.\n\nInformación de la base de datos:\n\nTabla: personas1\n\nColumnas:\n- documento \n- tipo_documento \n- primer_nombre \n- segundo_nombre \n- apellidos \n- fecha_nacimiento \n- genero \n- correo \n- celular \n- foto_url \n- rol \n\nReglas IMPORTANTES:\n- SOLO puedes usar consultas SQL tipo SELECT\n- NUNCA uses INSERT, UPDATE o DELETE\n- SIEMPRE debes usar la herramienta consultar_bd para ejecutar la SQL\n- NO inventes datos\n- Responde en español\n- No devuelvas la consulta SQL al usuario, solo el análisis de los resultados\n\nReglas de construcción SQL:\n- Usa SIEMPRE la tabla \"personas1\"\n- Para nombres completos usa:\n  primer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n- Usa ILIKE para búsquedas por texto (insensible a mayúsculas)\n- Usa LIMIT 10 si no se especifica límite\n- Usa COUNT(*) para conteos\n\nReglas de interpretación:\n- \"persona más joven\" = ORDER BY fecha_nacimiento DESC\n- \"persona más vieja\" = ORDER BY fecha_nacimiento ASC\n- \"edad\" = EXTRACT(YEAR FROM AGE(fecha_nacimiento))\n- Si preguntan por nombre, buscar en:\n  primer_nombre, segundo_nombre o apellidos\n\nRegla estricta:\n- SIEMPRE debes ejecutar la consulta con la herramienta consultar_bd\n- NO devuelvas la SQL directamente al usuario\n- Si no hay resultados, dilo explícitamente\n- Resume varias filas si las hay\n- Explica claramente los resultados en español",
+        "text": "Eres un asistente experto en PostgreSQL.\n\nTu única tarea es convertir preguntas en lenguaje natural en consultas SQL válidas.\n\nBase de datos:\n\nTabla: personas1\n\nColumnas:\n- documento \n- tipo_documento \n- primer_nombre \n- segundo_nombre \n- apellidos \n- fecha_nacimiento \n- genero \n- correo \n- celular \n- foto_url \n- rol \n\n----------------------------------------\nREGLAS OBLIGATORIAS\n----------------------------------------\n\n- SOLO puedes generar consultas SQL tipo SELECT\n- PROHIBIDO usar INSERT, UPDATE, DELETE, DROP o ALTER\n- NO expliques nada\n- NO agregues texto adicional\n- NO uses comillas triples\n- NO uses markdown\n- La respuesta debe ser SOLO JSON válido\n- NO inventes datos\n- SIEMPRE genera una consulta\n\n----------------------------------------\nFORMATO DE SALIDA (OBLIGATORIO)\n----------------------------------------\n\nResponde EXACTAMENTE así:\n\n{\n  \"query\": \"SELECT ...\"\n}\n\n- No agregues nada antes ni después del JSON\n- El JSON debe ser válido\n- La consulta debe terminar en ;\n\n----------------------------------------\nREGLAS DE CONSTRUCCIÓN SQL\n----------------------------------------\n\n- Usa SIEMPRE la tabla: personas1\n- NO uses LIMIT por defecto\n- SOLO usa LIMIT cuando la pregunta implique:\n  - \"el más\", \"la más\"\n  - \"primero\", \"último\"\n  - \"top\"\n- Usa COUNT(*) para conteos\n- Usa alias solo si es necesario\n\n----------------------------------------\nMANEJO DE NOMBRES\n----------------------------------------\n\nPara nombre completo usa EXACTAMENTE:\n\nprimer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n\n----------------------------------------\nBÚSQUEDAS DE TEXTO\n----------------------------------------\n\n- Usa ILIKE para búsquedas (case insensitive)\n- Para búsquedas por nombre:\n\nWHERE \n  primer_nombre ILIKE '%valor%' OR\n  segundo_nombre ILIKE '%valor%' OR\n  apellidos ILIKE '%valor%'\n\n----------------------------------------\nREGLAS DE INTERPRETACIÓN\n----------------------------------------\n\nANTES de generar la consulta, identifica la intención del usuario.\n\n- \"persona más joven\" → ORDER BY fecha_nacimiento DESC LIMIT 1\n- \"persona más vieja\" → ORDER BY fecha_nacimiento ASC LIMIT 1\n- \"edad\" → EXTRACT(YEAR FROM AGE(fecha_nacimiento))\n- \"correo de X documento\" → filtrar por documento\n\n- Si la pregunta implica comparación (más, menos, mayor, menor):\n  SIEMPRE usar ORDER BY + LIMIT 1\n\n- NUNCA generes consultas genéricas como:\n  SELECT * FROM personas1 LIMIT 10;\n\n- Si la pregunta es ambigua o no tiene sentido claro, genera la consulta más específica posible basada en los datos disponibles, evitando resultados genéricos.\n\n----------------------------------------\nVALIDACIONES IMPORTANTES\n----------------------------------------\n\n- Asegúrate que la consulta sea SQL válido en PostgreSQL\n- NO generes columnas que no existen\n- NO uses funciones no soportadas\n- SIEMPRE incluye FROM personas1\n\n----------------------------------------\nEJEMPLOS\n----------------------------------------\n\nUsuario: ¿Quién es la persona más joven?\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, segundo_nombre, apellidos, fecha_nacimiento FROM personas1 ORDER BY fecha_nacimiento DESC LIMIT 1;\"\n}\n\nUsuario: Dame personas con nombre Juan\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, apellidos FROM personas1 WHERE primer_nombre ILIKE '%juan%' OR segundo_nombre ILIKE '%juan%' OR apellidos ILIKE '%juan%';\"\n}\n\nUsuario: ¿Cuántas personas hay?\nRespuesta:\n{\n  \"query\": \"SELECT COUNT(*) FROM personas1;\"\n}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2,
       "position": [
-        220,
-        0
+        -420,
+        260
       ],
-      "id": "14985e3c-acde-4758-a912-808dcb2b9028",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-2.5-flash",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        120,
-        180
-      ],
-      "id": "ebbc00ae-f08f-428b-b422-f59788298043",
-      "name": "Google Gemini Chat Model",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "i6pgu2DdFe2jw5Dm",
-          "name": "Google Gemini(PaLM) Api it"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "Ejecuta consultas SQL en la base de datos PostgreSQL.\nSolo se permiten consultas tipo SELECT.\nSe usa para obtener información de la tabla personas.",
-        "operation": "executeQuery",
-        "query": "{{ $fromAI(\"query\") }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
-      "position": [
-        360,
-        220
-      ],
-      "id": "31aa1249-0271-40ca-acb1-dbd4043a4954",
-      "name": "consultar_bd",
-      "credentials": {
-        "postgres": {
-          "id": "8a3juCRQUN2R4VuO",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Eres un asistente experto en PostgreSQL.\n\nTu única tarea es convertir preguntas en lenguaje natural en consultas SQL válidas.\n\nBase de datos:\n\nTabla: personas1\n\nColumnas:\n- documento \n- tipo_documento \n- primer_nombre \n- segundo_nombre \n- apellidos \n- fecha_nacimiento \n- genero \n- correo \n- celular \n- foto_url \n- rol \n\n----------------------------------------\nREGLAS OBLIGATORIAS\n----------------------------------------\n\n- SOLO puedes generar consultas SQL tipo SELECT\n- PROHIBIDO usar INSERT, UPDATE, DELETE, DROP o ALTER\n- NO expliques nada\n- NO agregues texto adicional\n- NO uses comillas triples\n- NO uses markdown\n- La respuesta debe ser SOLO JSON válido\n- NO inventes datos\n- SIEMPRE genera una consulta\n\n----------------------------------------\nFORMATO DE SALIDA (OBLIGATORIO)\n----------------------------------------\n\nResponde EXACTAMENTE así:\n\n{\n  \"query\": \"SELECT ...\"\n}\n\n- No agregues nada antes ni después del JSON\n- El JSON debe ser válido\n- La consulta debe terminar en ;\n\n----------------------------------------\nREGLAS DE CONSTRUCCIÓN SQL\n----------------------------------------\n\n- Usa SIEMPRE la tabla: personas1\n- Usa LIMIT 10 por defecto si no se especifica límite\n- Usa COUNT(*) para conteos\n- Usa alias solo si es necesario\n\n----------------------------------------\nMANEJO DE NOMBRES\n----------------------------------------\n\nPara nombre completo usa EXACTAMENTE:\n\nprimer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n\n----------------------------------------\nBÚSQUEDAS DE TEXTO\n----------------------------------------\n\n- Usa ILIKE para búsquedas (case insensitive)\n- Para búsquedas por nombre:\n\nWHERE \n  primer_nombre ILIKE '%valor%' OR\n  segundo_nombre ILIKE '%valor%' OR\n  apellidos ILIKE '%valor%'\n\n----------------------------------------\nREGLAS DE INTERPRETACIÓN\n----------------------------------------\n\n- \"persona más joven\" → ORDER BY fecha_nacimiento DESC\n- \"persona más vieja\" → ORDER BY fecha_nacimiento ASC\n- \"edad\" → EXTRACT(YEAR FROM AGE(fecha_nacimiento))\n- \"correo de X documento\" → filtrar por documento\n\n----------------------------------------\nVALIDACIONES IMPORTANTES\n----------------------------------------\n\n- Asegúrate que la consulta sea SQL válido en PostgreSQL\n- NO generes columnas que no existen\n- NO uses funciones no soportadas\n- SIEMPRE incluye FROM personas1\n\n----------------------------------------\nEJEMPLOS\n----------------------------------------\n\nUsuario: ¿Quién es la persona más joven?\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, segundo_nombre, apellidos, fecha_nacimiento FROM personas1 ORDER BY fecha_nacimiento DESC LIMIT 1;\"\n}\n\nUsuario: Dame personas con nombre Juan\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, apellidos FROM personas1 WHERE primer_nombre ILIKE '%juan%' OR segundo_nombre ILIKE '%juan%' OR apellidos ILIKE '%juan%' LIMIT 10;\"\n}\n\nUsuario: ¿Cuántas personas hay?\nRespuesta:\n{\n  \"query\": \"SELECT COUNT(*) FROM personas1;\"\n}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2,
-      "position": [
-        1040,
-        40
-      ],
-      "id": "3006ab25-3a0e-4f8e-acc0-1a16651a7fe4",
-      "name": "AI Agent1"
+      "id": "49c546b1-8288-4075-a3cb-ed1b33b9bd45",
+      "name": "AI Agent1",
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -96,10 +39,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        940,
-        220
+        -400,
+        700
       ],
-      "id": "bce95f16-3f37-4319-a677-21155d3bfdd7",
+      "id": "fee06792-6d88-4bfd-975d-c08cfa4eba55",
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
@@ -119,10 +62,10 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.6,
       "position": [
-        1180,
-        260
+        -160,
+        740
       ],
-      "id": "ebf188e9-77d2-4259-bb88-3f3f8f698e27",
+      "id": "34abad8e-b9d5-4d2d-a287-878facf74181",
       "name": "consultar_bd1",
       "credentials": {
         "postgres": {
@@ -140,10 +83,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1400,
-        60
+        60,
+        540
       ],
-      "id": "2afbf878-4612-4e20-992e-13a87ed6a5ff",
+      "id": "0d1fdf07-d683-4d24-bf17-54a666af5c9e",
       "name": "Execute a SQL query",
       "credentials": {
         "postgres": {
@@ -161,11 +104,12 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 2,
       "position": [
-        2200,
-        -60
+        860,
+        420
       ],
-      "id": "ec7523b1-687c-4605-ad27-4fa75a9b0243",
-      "name": "AI Agent2"
+      "id": "24997f47-2a1a-4fd1-9626-4421220ba74b",
+      "name": "AI Agent2",
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -175,10 +119,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1,
       "position": [
-        2160,
-        200
+        820,
+        680
       ],
-      "id": "eb7fffa5-5035-478e-a7bd-0132b2bd55b9",
+      "id": "fa6ca2e9-1947-4da7-82d6-d1d52fa012cb",
       "name": "Google Gemini Chat Model2",
       "credentials": {
         "googlePalmApi": {
@@ -188,238 +132,27 @@
       }
     },
     {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
-      "typeVersion": 1.3,
+      "parameters": {
+        "jsCode": "// Convierte el string JSON del AI en un objeto real para Postgres\ntry {\n  const aiOutput = JSON.parse($json[\"output\"]);\n\n  return [\n    {\n      json: {\n        query: aiOutput.query\n      }\n    }\n  ];\n} catch (error) {\n  return [\n    {\n      json: {\n        query: \"SELECT 'Error parseando JSON' as mensaje;\",\n        fallback: true\n      }\n    }\n  ];\n}\nreturn [\n  {\n    json: {\n      query: aiOutput.query\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        260,
+        -60,
         200
       ],
-      "id": "adc8fd49-a093-48bd-a458-47adb7e80f8f",
-      "name": "Simple Memory"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Convierte el string JSON del AI en un objeto real para Postgres\nconst aiOutput = JSON.parse($json[\"output\"]);\nreturn [\n  {\n    json: {\n      query: aiOutput.query\n    }\n  }\n];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1180,
-        -400
-      ],
-      "id": "326c91cf-09f3-4e09-940f-59667d97c476",
+      "id": "045627fc-2636-45f6-80cc-13f73237c6bb",
       "name": "Code"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "Eres un asistente experto en PostgreSQL.\n\nTu única tarea es convertir preguntas en lenguaje natural en consultas SQL válidas.\n\nBase de datos:\n\nTabla: personas1\n\nColumnas:\n- documento \n- tipo_documento \n- primer_nombre \n- segundo_nombre \n- apellidos \n- fecha_nacimiento \n- genero \n- correo \n- celular \n- foto_url \n- rol \n\n----------------------------------------\nREGLAS OBLIGATORIAS\n----------------------------------------\n\n- SOLO puedes generar consultas SQL tipo SELECT\n- PROHIBIDO usar INSERT, UPDATE, DELETE, DROP o ALTER\n- NO expliques nada\n- NO agregues texto adicional\n- NO uses comillas triples\n- NO uses markdown\n- La respuesta debe ser SOLO JSON válido\n- NO inventes datos\n- SIEMPRE genera una consulta\n\n----------------------------------------\nFORMATO DE SALIDA (OBLIGATORIO)\n----------------------------------------\n\nResponde EXACTAMENTE así:\n\n{\n  \"query\": \"SELECT ...\"\n}\n\n- No agregues nada antes ni después del JSON\n- El JSON debe ser válido\n- La consulta debe terminar en ;\n\n----------------------------------------\nREGLAS DE CONSTRUCCIÓN SQL\n----------------------------------------\n\n- Usa SIEMPRE la tabla: personas1\n- Usa LIMIT 10 por defecto si no se especifica límite\n- Usa COUNT(*) para conteos\n- Usa alias solo si es necesario\n\n----------------------------------------\nMANEJO DE NOMBRES\n----------------------------------------\n\nPara nombre completo usa EXACTAMENTE:\n\nprimer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n\n----------------------------------------\nBÚSQUEDAS DE TEXTO\n----------------------------------------\n\n- Usa ILIKE para búsquedas (case insensitive)\n- Para búsquedas por nombre:\n\nWHERE \n  primer_nombre ILIKE '%valor%' OR\n  segundo_nombre ILIKE '%valor%' OR\n  apellidos ILIKE '%valor%'\n\n----------------------------------------\nREGLAS DE INTERPRETACIÓN\n----------------------------------------\n\n- \"persona más joven\" → ORDER BY fecha_nacimiento DESC\n- \"persona más vieja\" → ORDER BY fecha_nacimiento ASC\n- \"edad\" → EXTRACT(YEAR FROM AGE(fecha_nacimiento))\n- \"correo de X documento\" → filtrar por documento\n\n----------------------------------------\nVALIDACIONES IMPORTANTES\n----------------------------------------\n\n- Asegúrate que la consulta sea SQL válido en PostgreSQL\n- NO generes columnas que no existen\n- NO uses funciones no soportadas\n- SIEMPRE incluye FROM personas1\n\n----------------------------------------\nEJEMPLOS\n----------------------------------------\n\nUsuario: ¿Quién es la persona más joven?\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, segundo_nombre, apellidos, fecha_nacimiento FROM personas1 ORDER BY fecha_nacimiento DESC LIMIT 1;\"\n}\n\nUsuario: Dame personas con nombre Juan\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, apellidos FROM personas1 WHERE primer_nombre ILIKE '%juan%' OR segundo_nombre ILIKE '%juan%' OR apellidos ILIKE '%juan%' LIMIT 10;\"\n}\n\nUsuario: ¿Cuántas personas hay?\nRespuesta:\n{\n  \"query\": \"SELECT COUNT(*) FROM personas1;\"\n}",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2,
-      "position": [
-        2560,
-        440
-      ],
-      "id": "e9fa01f6-7906-442d-b23d-33f88ffc6f28",
-      "name": "AI Agent3"
-    },
-    {
-      "parameters": {
-        "descriptionType": "manual",
-        "toolDescription": "Ejecuta consultas SQL en la base de datos PostgreSQL.\nSolo se permiten consultas tipo SELECT.\nSe usa para obtener información de la tabla personas.",
-        "operation": "executeQuery",
-        "query": "{{ $fromAI(\"query\") }}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgresTool",
-      "typeVersion": 2.6,
-      "position": [
-        2700,
-        660
-      ],
-      "id": "d7928d6e-6cc4-48ac-8a16-f3b0e5df3d80",
-      "name": "consultar_bd2",
-      "credentials": {
-        "postgres": {
-          "id": "8a3juCRQUN2R4VuO",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "{{$json[\"query\"]}}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        2920,
-        460
-      ],
-      "id": "78e03ac8-bb24-4b4c-9270-ffe0d2997029",
-      "name": "Execute a SQL query1",
-      "credentials": {
-        "postgres": {
-          "id": "8a3juCRQUN2R4VuO",
-          "name": "Postgres account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "=Eres un asistente que responde preguntas en lenguaje natural usando **solo los datos extraídos de la base de datos PostgreSQL** que vienen en `dbResult`.\n\nTu tarea es **explicar la respuesta al usuario usando únicamente la información que se encuentra en `dbResult`.**\n\nReglas importantes:\n1. No inventes información. Si `dbResult` está vacío, di claramente que no se encontró información.\n2. Responde en español de manera clara, concisa y natural.\n3. Si hay múltiples resultados, resume la información de manera comprensible.\n4. Cuando sea relevante, usa el **nombre completo** concatenando `primer_nombre + segundo_nombre + apellidos`.\n5. Incluye los campos más importantes si existen: `documento`, `tipo_documento`, `nombre completo`, `fecha_nacimiento`, `genero`, `correo`, `celular`, `rol` y `foto_url`.\n6. Evita usar información que no venga de `dbResult`.\n\nFormato de entrada:\n{\n  \"chatInput\": \"Pregunta original del usuario\",\n  \"dbResult\": [ ... ] // resultado del query SQL en formato JSON\n}\n\nEjemplo de entrada:\n{\n  \"chatInput\": \"¿Quién es la persona más joven?\",\n  \"dbResult\": [\n    {\n      \"documento\": \"777\",\n      \"tipo_documento\": \"CC\",\n      \"primer_nombre\": \"Simon\",\n      \"segundo_nombre\": \"\",\n      \"apellidos\": \"Giraldo\",\n      \"fecha_nacimiento\": \"2004-01-01T00:00:00.000Z\",\n      \"genero\": \"Masculino\",\n      \"correo\": \"yop@gmail.com\",\n      \"celular\": \"3000000000\",\n      \"foto_url\": \"777.jpg\",\n      \"rol\": \"admin\"\n    }\n  ]\n}\n\nEjemplo de salida:\n\"Según la base de datos, la persona más joven es Simon Giraldo (CC 777), nacido el 1 de enero de 2004. Es de género Masculino, con correo yop@gmail.com, celular 3000000000 y rol admin.\"",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 2,
-      "position": [
-        3140,
-        440
-      ],
-      "id": "c3050308-9c57-448b-bf18-bda81f075e08",
-      "name": "AI Agent4"
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-flash-latest",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        3160,
-        660
-      ],
-      "id": "e94122b7-adcb-4a55-8e9f-07624ec80068",
-      "name": "Google Gemini Chat Model4",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "hLTpY1BcEYeGczU6",
-          "name": "Google Gemini(PaLM) DS2 IA2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "// Convierte el string JSON del AI en un objeto real para Postgres\nconst aiOutput = JSON.parse($json[\"output\"]);\nreturn [\n  {\n    json: {\n      query: aiOutput.query\n    }\n  }\n];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        2700,
-        0
-      ],
-      "id": "82d5373f-4e9b-4065-b325-dc8008ce96c5",
-      "name": "Code2"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Nodo Function: Combina pregunta y resultados de Postgres\n// Entrada: \n// - $json[\"sessionId\"], $json[\"action\"], $json[\"chatInput\"]  → pregunta del usuario\n// - $items(\"Execute a SQL query1\")[0].json → resultado de Postgres\n\nreturn [\n  {\n    json: {\n      sessionId: $json[\"sessionId\"] || \"\",\n      action: $json[\"action\"] || \"\",\n      chatInput: $json[\"chatInput\"] || \"\",\n      dbResult: $items(\"Execute a SQL query1\")[0].json\n    }\n  }\n];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        3160,
-        80
-      ],
-      "id": "9c0262df-500f-4ec0-a9ab-f146b7a498b9",
-      "name": "Code3"
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-embedding-001"
-      },
-      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        2160,
-        660
-      ],
-      "id": "600ab86e-349c-4f7a-87ac-482cdaaf2261",
-      "name": "Embeddings Google Gemini",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "hLTpY1BcEYeGczU6",
-          "name": "Google Gemini(PaLM) DS2 IA2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "modelName": "models/gemini-flash-latest",
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-      "typeVersion": 1,
-      "position": [
-        2460,
-        620
-      ],
-      "id": "d0439470-9e7c-4ebd-a009-b32178b260d4",
-      "name": "Google Gemini Chat Model3",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "tJ7nlJlETicecut6",
-          "name": "Google Gemini(PaLM) DS2 IA1"
-        }
-      }
-    },
-    {
-      "parameters": {},
-      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
-      "typeVersion": 1.3,
-      "position": [
-        2580,
-        700
-      ],
-      "id": "a1a32a15-6073-47da-80cc-02f2ce71c648",
-      "name": "Postgres Chat Memory",
-      "credentials": {
-        "postgres": {
-          "id": "fIIQvXPnu264nWyK",
-          "name": "Postgres account 2"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "tableName": {
-          "__rl": true,
-          "mode": "list",
-          "value": ""
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
-      "typeVersion": 1.3,
-      "position": [
-        2660,
-        840
-      ],
-      "id": "7fcd3dec-24c5-4ef0-ac99-7944cac04b3e",
-      "name": "Supabase Vector Store",
-      "credentials": {
-        "supabaseApi": {
-          "id": "wjNbt6Vtgd7S6tq8",
-          "name": "Supabase account"
-        }
-      }
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1680,
-        20
+        340,
+        500
       ],
-      "id": "4975325d-0bcb-49e0-a670-4be73dbf76c2",
+      "id": "c075137b-e805-43ca-a6e8-c3f5fb4727bb",
       "name": "Merge"
     },
     {
@@ -429,11 +162,37 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1940,
-        -160
+        600,
+        320
       ],
-      "id": "b0191f71-1813-4fd3-a2bb-670298cb142e",
+      "id": "57a33169-961c-45cf-af9a-978ac978fd0c",
       "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      query: \"SELECT 'Error generando consulta SQL' as mensaje;\",\n      fallback: true\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        260
+      ],
+      "id": "d34e741f-094e-4a55-9bf4-1b38b1ee7657",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      text: \"No pude generar respuesta con IA, intente mas tarde\",\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        420
+      ],
+      "id": "5b46a071-c5ce-4c61-8c3a-74acf0b3bb6c",
+      "name": "Code3"
     }
   ],
   "pinData": {},
@@ -442,35 +201,31 @@
       "main": [
         [
           {
-            "node": "AI Agent1",
+            "node": "Merge",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merge",
+            "node": "AI Agent1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Google Gemini Chat Model": {
-      "ai_languageModel": [
+    "AI Agent1": {
+      "main": [
         [
           {
-            "node": "AI Agent",
-            "type": "ai_languageModel",
+            "node": "Code",
+            "type": "main",
             "index": 0
           }
-        ]
-      ]
-    },
-    "consultar_bd": {
-      "ai_tool": [
+        ],
         [
           {
-            "node": "AI Agent",
-            "type": "ai_tool",
+            "node": "Code2",
+            "type": "main",
             "index": 0
           }
         ]
@@ -498,17 +253,6 @@
         ]
       ]
     },
-    "AI Agent1": {
-      "main": [
-        [
-          {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Execute a SQL query": {
       "main": [
         [
@@ -531,17 +275,6 @@
         ]
       ]
     },
-    "Simple Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Code": {
       "main": [
         [
@@ -551,99 +284,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "AI Agent3": {
-      "main": [
-        [
-          {
-            "node": "Code2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "consultar_bd2": {
-      "ai_tool": [
-        [
-          {
-            "node": "AI Agent3",
-            "type": "ai_tool",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Execute a SQL query1": {
-      "main": [
-        [
-          {
-            "node": "Code3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model4": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent4",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code2": {
-      "main": [
-        [
-          {
-            "node": "Execute a SQL query1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code3": {
-      "main": [
-        [
-          {
-            "node": "AI Agent4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Google Gemini Chat Model3": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "AI Agent3",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Postgres Chat Memory": {
-      "ai_memory": [
-        [
-          {
-            "node": "AI Agent3",
-            "type": "ai_memory",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent2": {
-      "main": [
-        []
       ]
     },
     "Merge": {
@@ -667,17 +307,39 @@
           }
         ]
       ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "95025064-af89-48b1-9ed6-60ae05e315c2",
+  "versionId": "78d0e715-fa7e-412a-b960-92769bcfb19b",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "ce032eaa5de378cf1020387367e61fcf87954356242477bcd707a822dd00bdd8"
   },
-  "id": "8VH6k1nBcYqRvpxB",
+  "id": "alUcO8QnJIrLG63w",
   "tags": []
 }

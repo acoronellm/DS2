@@ -1,6 +1,8 @@
 services:
 
-  # --- servicios existentes --- #
+  # =========================
+  # TRAEFIK
+  # =========================
   traefik:
     image: traefik:v3.1
     container_name: traefik
@@ -18,6 +20,9 @@ services:
     networks:
       - app-network
 
+  # =========================
+  # POSTGRES (HEALTHCHECK)
+  # =========================
   postgres:
     image: postgres:15
     container_name: postgres_db
@@ -34,6 +39,15 @@ services:
     networks:
       - app-network
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d personas_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # =========================
+  # MINIO (HEALTHCHECK)
+  # =========================
   minio:
     image: minio/minio
     container_name: minio_storage
@@ -50,10 +64,17 @@ services:
     networks:
       - app-network
 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   minio-init:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     networks:
       - app-network
     entrypoint: >
@@ -64,152 +85,137 @@ services:
       done;
       mc mb local/fotos-personas || true;
       mc anonymous set public local/fotos-personas;
-      echo 'Bucket listo y público';
-      exit 0;
+      echo 'Bucket listo';
       "
 
-  # --- tus microservicios existentes --- #
+  # =========================
+  # MICROSERVICIOS
+  # =========================
   op-create:
-    build: 
-      context: ./op-create
-      dockerfile: Dockerfile
+    build: ./op-create
     container_name: op-create
     ports:
       - "5001:5001"
     environment:
       - FLASK_ENV=development
       - AUTH_SERVICE_URL=http://auth-service:5002
-      - OP_DELETE_URL=http://op-delete:5005
     depends_on:
-      - postgres
-      - minio
-      - auth-service
-      - op-delete
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
   op-update:
-    build: 
-      context: ./op-update
-      dockerfile: Dockerfile
+    build: ./op-update
     container_name: op-update
     ports:
       - "5003:5003"
-    environment:
-      - FLASK_ENV=development
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
   op-read:
-    build: 
-      context: ./op-read
-      dockerfile: Dockerfile
+    build: ./op-read
     container_name: op-read
     ports:
       - "5004:5004"
-    environment:
-      - FLASK_ENV=development
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
   op-delete:
-    build: 
-      context: ./op-delete
-      dockerfile: Dockerfile
+    build: ./op-delete
     container_name: op-delete
     ports:
       - "5005:5005"
-    environment:
-      - FLASK_ENV=development
     depends_on:
-      - postgres
-      - minio
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
   auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+    build: ./auth-service
     container_name: auth-service
     ports:
       - "5002:5002"
     environment:
       - FLASK_ENV=development
-      - ROBLE_API_URL=https://roble-api.openlab.uninorte.edu.co/auth/ds2_fd1af67fb8
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
-  # --- n8n actualizado --- #
+  # =========================
+  # N8N
+  # =========================
   n8n:
     image: n8nio/n8n:latest
     container_name: n8n
     ports:
       - "5678:5678"
+
     volumes:
       - ./n8n/workflows:/workflows
+      - ./n8n/credentials.json:/credentials.json
       - ./n8n/init.sh:/init.sh
       - n8n_data:/home/node/.n8n
+
+    environment:
+      - N8N_ENCRYPTION_KEY=clave123
+      - N8N_RUNNERS_ENABLED=true
+
     entrypoint: /bin/sh
     command: /init.sh
+
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+
+    restart: always
     networks:
       - app-network
 
-  # --- contenedor para importar workflows --- #
-  n8n-importer:
-    image: curlimages/curl:latest
-    depends_on:
-      - n8n
-    volumes:
-      - ./n8n-flows:/workflows
-      - ./n8n-scripts:/scripts
-    entrypoint: ["/scripts/import-workflows.sh"]
-    networks:
-      - app-network
-
+  # =========================
+  # PLATAFORMA
+  # =========================
   plataforma:
-    build: 
-      context: ./plataforma
-      dockerfile: Dockerfile
+    build: ./plataforma
     container_name: plataforma
     ports:
       - "5000:5000"
     environment:
       - FLASK_ENV=development
-      - OP_CREATE_URL=http://op-create:5001
-      - OP_UPDATE_URL=http://op-update:5003
-      - OP_READ_URL=http://op-read:5004
-      - OP_DELETE_URL=http://op-delete:5005
-      - AUTH_SERVICE_URL=http://auth-service:5002
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - op-create
-      - op-update
-      - op-read
-      - op-delete
-      - auth-service
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.plataforma.rule=Host(`localhost`)"
-      - "traefik.http.services.plataforma.loadbalancer.server.port=5000"
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     restart: always
     networks:
       - app-network
 
+# =========================
+# VOLUMENES
+# =========================
 volumes:
   postgres_data:
   minio_data:
