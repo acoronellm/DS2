@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Resultado actualización</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='estilos/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="dashboard-page">
+      <div class="dashboard-card">
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle" />
+
+        <aside class="sidebar collapsed">
+          <label for="sidebarToggle" class="toggle-btn">↗</label>
+
+          <nav class="sidebar-menu">
+            <!-- VOLVER AL MENÚ (SIEMPRE) -->
+            <a href="/menu" title="Panel principal">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/casa.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Panel principal</span>
+            </a>
+
+            {% if not ocultar_menu %} {% if rol_usuario|lower == "admin" %}
+
+            <a href="/formulario_crear" title="Crear persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Crear persona</span>
+            </a>
+
+            <a href="/formulario_consultar" title="Consultar persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Consultar persona</span>
+            </a>
+
+            <a href="/formulario_eliminar" title="Eliminar persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Eliminar persona</span>
+            </a>
+
+            <a href="/llamado_logs" title="Vista de logs">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Vista de logs</span>
+            </a>
+
+            {% endif %} {% endif %}
+
+            <!-- ACTUALIZAR -->
+            <a
+              href="/formulario_actualizar"
+              title="Actualizar persona"
+              class="active-link"
+            >
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="menu-icon"
+              />
+
+              <span class="menu-text">
+                {% if rol_usuario|lower == "admin" %} Actualizar persona {% else
+                %} Actualizar mis datos {% endif %}
+              </span>
+            </a>
+          </nav>
+
+          <!-- LOGOUT -->
+          <form action="/logout" method="post" class="logout-form">
+            <button type="submit" title="Cerrar sesión">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/salida.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Cerrar sesión</span>
+            </button>
+          </form>
+        </aside>
+
+        <main class="dashboard-content">
+          <div class="topbar">
+            <div>
+              <h1>Resultado de actualización</h1>
+              <p>Respuesta del sistema</p>
+            </div>
+          </div>
+
+          <section class="create-result-box">
+            <div class="create-result-card">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="create-result-icon"
+              />
+
+              <h2>Proceso finalizado</h2>
+
+              <div class="result-message success-result-message">
+                <p>{{ mensaje }}</p>
+              </div>
+
+              <div class="create-result-actions">
+                <a
+                  href="{{ url_for('formulario_actualizar') }}"
+                  class="primary-btn"
+                >
+                  Actualizar otra persona
+                </a>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

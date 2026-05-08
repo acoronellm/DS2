@@ -28,34 +28,52 @@
             {% if rol_usuario == "admin" %}
 
             <a href="/formulario_crear" title="Crear persona">
-              <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Crear persona</span>
             </a>
 
             <a href="/formulario_actualizar" title="Actualizar persona">
-              <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Actualizar persona</span>
             </a>
 
             <a href="/formulario_consultar" title="Consultar persona">
-              <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Consultar persona</span>
             </a>
 
             <a href="/formulario_eliminar" title="Eliminar persona">
-              <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Eliminar persona</span>
             </a>
 
             <a href="/llamado_logs" title="Vista de logs">
-              <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Vista de logs</span>
             </a>
 
             {% else %}
 
             <a href="/formulario_actualizar" title="Actualizar persona">
-              <span class="menu-icon">✏️</span>
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Actualizar persona</span>
             </a>
 
@@ -64,7 +82,10 @@
 
           <form action="/logout" method="post" class="logout-form">
             <button type="submit" title="Cerrar sesión">
-              <img src="{{ url_for('static', filename='estilos/iconos/salida.png') }}" class="menu-icon">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/salida.png') }}"
+                class="menu-icon"
+              />
               <span class="menu-text">Cerrar sesión</span>
             </button>
           </form>
@@ -219,12 +240,18 @@
           </section>
 
           {% else %}
-
           <section class="summary-box">
-            <h2>Panel de administración</h2>
-            <p>Selecciona una opción del menú lateral para continuar.</p>
-          </section>
+            <h2>
+              {% if rol_usuario == 'admin' %} Panel de administración {% else %}
+              Panel de usuario {% endif %}
+            </h2>
 
+            <p>
+              {% if rol_usuario == 'admin' %} Gestiona la información del
+              sistema desde el menú lateral. {% else %} Consulta y actualiza tu
+              información desde el menú lateral. {% endif %}
+            </p>
+          </section>
           {% endif %}
         </main>
       </div>

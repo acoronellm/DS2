@@ -1,205 +1,210 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Actualizar persona</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
-</head>
-<body>
-
-<div class="dashboard-page">
-    <div class="dashboard-card">
-
-        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='estilos/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="dashboard-page">
+      <div class="dashboard-card">
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle" />
 
         <aside class="sidebar collapsed">
-            <label for="sidebarToggle" class="toggle-btn">↗</label>
+          <label for="sidebarToggle" class="toggle-btn">↗</label>
 
-            <nav class="sidebar-menu">
-                <a href="/menu" title="Panel principal">
-                    <img src="{{ url_for('static', filename='estilos/iconos/casa.png') }}" class="menu-icon">
-                    <span class="menu-text">Panel principal</span>
-                </a>
+          <nav class="sidebar-menu">
+            <!-- PANEL PRINCIPAL (admin o usuario)-->
+            <a href="/menu" title="Panel principal">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/casa.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Panel principal</span>
+            </a>
 
-                <a href="/formulario_crear" title="Crear persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
-                    <span class="menu-text">Crear persona</span>
-                </a>
+            <!-- CREAR (solo admin)-->
+            {% if not ocultar_menu %} {% if rol_usuario|lower == "admin" %}
 
-                <a href="/formulario_actualizar" title="Actualizar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
-                    <span class="menu-text">Actualizar persona</span>
-                </a>
+            <a href="/formulario_crear" title="Crear persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Crear persona</span>
+            </a>
 
-                <a href="/formulario_consultar" title="Consultar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
-                    <span class="menu-text">Consultar persona</span>
-                </a>
+            {% endif %} {% endif %}
 
-                <a href="/formulario_eliminar" title="Eliminar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
-                    <span class="menu-text">Eliminar persona</span>
-                </a>
+            <!-- ACTUALIZAR (SIEMPRE VISIBLE SI ES USUARIO) -->
+            <a
+              href="/formulario_actualizar"
+              title="Actualizar persona"
+              class="active-link"
+            >
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="menu-icon"
+              />
 
-                <a href="/llamado_logs" title="Vista de logs">
-                    <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
-                    <span class="menu-text">Vista de logs</span>
-                </a>
-            </nav>
+              <span class="menu-text">
+                {% if rol_usuario|lower == "admin" %} Actualizar persona {% else
+                %} Actualizar mis datos {% endif %}
+              </span>
+            </a>
+
+            <!-- CONSULTAR(solo admin) -->
+            {% if not ocultar_menu %} {% if rol_usuario|lower == "admin" %}
+
+            <a href="/formulario_consultar" title="Consultar persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Consultar persona</span>
+            </a>
+
+            <!-- ELIMINAR (solo admin)-->
+            <a href="/formulario_eliminar" title="Eliminar persona">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Eliminar persona</span>
+            </a>
+
+            <!-- LOGS -->
+            <a href="/llamado_logs" title="Vista de logs">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Vista de logs</span>
+            </a>
+
+            {% endif %} {% endif %}
+          </nav>
+
+          <!-- LOGOUT -->
+          <form action="/logout" method="post" class="logout-form">
+            <button type="submit" title="Cerrar sesión">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/salida.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Cerrar sesión</span>
+            </button>
+          </form>
         </aside>
 
         <main class="dashboard-content update-dashboard-content">
-
-            <div class="topbar update-topbar">
-                <div>
-                    <h1>Actualizar persona</h1>
-                    <p>Bienvenido, {{ persona.correo_electronico if persona else 'Invitado' }}</p>
-                </div>
+          <div class="topbar update-topbar">
+            <div>
+              <h1>Actualizar persona</h1>
+              <p>Bienvenido, {{ email }}</p>
             </div>
+          </div>
 
-            {% if persona %}
+          {% if persona %}
+          <section class="update-compact-box">
+            <form
+              action="{{ url_for('actualizar_persona') }}"
+              method="post"
+              enctype="multipart/form-data"
+              class="update-compact-layout"
+            >
+              <div class="update-compact-left">
+                <h2>Modificar datos personales</h2>
 
-            <section class="update-box update-clean-box">
+                <div class="readonly-field update-document">
+                  <span>Número de documento</span>
+                  <strong>{{ persona.numero_documento }}</strong>
+                </div>
+                <input
+                  type="hidden"
+                  name="numero_documento"
+                  value="{{ persona.numero_documento }}"
+                />
 
-                <form action="{{ url_for('actualizar_persona') }}" method="post" enctype="multipart/form-data" class="update-form-layout">
-
-                    <!-- COLUMNA IZQUIERDA -->
-                    <div class="update-left">
-
-                        <h2>Modificar datos personales</h2>
-
-                        <div class="readonly-field update-document">
-                            <span>Número de documento</span>
-                            <strong>{{ persona.numero_documento }}</strong>
-                        </div>
-                        <input type="hidden" name="numero_documento" value="{{ persona.numero_documento }}">
-
-                        <div class="form-section">
-                            <h3>Datos personales</h3>
-
-                            <div class="form-grid">
-
-                                <div class="field-box">
-                                    <label>Tipo de documento</label>
-                                    <select name="tipo_documento_identidad" required>
-                                        <option value="">Seleccione</option>
-                                        <option value="TI" {% if persona.tipo_documento_identidad == "TI" %}selected{% endif %}>Tarjeta de identidad</option>
-                                        <option value="CC" {% if persona.tipo_documento_identidad == "CC" %}selected{% endif %}>Cédula</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" name="tipo_documento_identidad2" value="{{ persona.tipo_documento_identidad }}">
-
-                                <div class="field-box">
-                                    <label>Primer nombre</label>
-                                    <input type="text" name="primer_nombre" value="{{ persona.primer_nombre }}" maxlength="30" pattern="[A-Za-z ]+" required>
-                                </div>
-                                <input type="hidden" name="primer_nombre2" value="{{ persona.primer_nombre }}">
-
-                                <div class="field-box">
-                                    <label>Segundo nombre</label>
-                                    <input type="text" name="segundo_nombre" value="{{ persona.segundo_nombre }}" maxlength="30" pattern="[A-Za-z ]+">
-                                </div>
-                                <input type="hidden" name="segundo_nombre2" value="{{ persona.segundo_nombre }}">
-
-                                <div class="field-box">
-                                    <label>Apellidos</label>
-                                    <input type="text" name="apellidos" value="{{ persona.apellidos }}" maxlength="60" pattern="[A-Za-z ]+" required>
-                                </div>
-                                <input type="hidden" name="apellidos2" value="{{ persona.apellidos }}">
-
-                                <div class="field-box">
-                                    <label>Género</label>
-                                    <select name="genero_persona" required>
-                                        <option value="">Seleccione</option>
-                                        <option value="Masculino" {% if persona.genero_persona == "Masculino" %}selected{% endif %}>Masculino</option>
-                                        <option value="Femenino" {% if persona.genero_persona == "Femenino" %}selected{% endif %}>Femenino</option>
-                                        <option value="No binario" {% if persona.genero_persona == "No binario" %}selected{% endif %}>No binario</option>
-                                        <option value="Prefiero no reportar" {% if persona.genero_persona == "Prefiero no reportar" %}selected{% endif %}>Prefiero no reportar</option>
-                                    </select>
-                                </div>
-                                <input type="hidden" name="genero_persona2" value="{{ persona.genero_persona }}">
-
-                                <div class="field-box">
-                                    <label>Celular</label>
-                                    <input type="text" name="numero_celular" value="{{ persona.numero_celular }}" maxlength="10" pattern="[0-9]{10}" required>
-                                </div>
-                                <input type="hidden" name="numero_celular2" value="{{ persona.numero_celular }}">
-
-                                <div class="field-box">
-                                    <label>Fecha de nacimiento</label>
-                                    <input type="date" name="fecha_nacimiento" value="{{ persona.fecha_nacimiento }}" required>
-                                </div>
-                                <input type="hidden" name="fecha_nacimiento2" value="{{ persona.fecha_nacimiento }}">
-                            </div>
-                        </div>
-
-                        <div class="form-section">
-                            <h3>Tipo de persona</h3>
-
-                            <div class="form-grid">
-                                <div class="field-box">
-                                    <label>Correo electrónico</label>
-                                    <input type="email" name="correo_electronico" value="{{ persona.correo_electronico }}" required>
-                                </div>
-                                <input type="hidden" name="correo_electronico2" value="{{ persona.correo_electronico }}">
-
-                                <div class="readonly-field user-type-text">
-                                    <span>Tipo de usuario</span>
-                                    <strong>{{ persona.rol_usuario }}</strong>
-                                </div>
-                                <input type="hidden" name="rol_usuario" value="{{ persona.rol_usuario }}">
-                            </div>
-                        </div>
-
+                <div class="form-section">
+                  <h3>Datos personales</h3>
+                  <div class="form-grid update-small-grid">
+                    <div class="field-box">
+                      <label>Primer nombre</label>
+                      <input
+                        type="text"
+                        name="primer_nombre"
+                        value="{{ persona.primer_nombre }}"
+                        required
+                      />
                     </div>
-
-                    <!-- COLUMNA DERECHA -->
-                    <div class="update-right">
-
-                        <div class="profile-card">
-                            <h3>Foto de perfil</h3>
-
-                            {% if persona.url_foto_perfil %}
-                                <div class="photo-preview big-photo-preview">
-                                    <img src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}" alt="Foto actual">
-                                </div>
-                            {% else %}
-                                <div class="photo-placeholder">
-                                    Sin foto
-                                </div>
-                            {% endif %}
-
-                            <input type="hidden" name="foto_actual" value="{{ persona.url_foto_perfil }}">
-
-                            <div class="file-box update-file-box">
-                                <label for="foto" class="file-button">Seleccionar archivo</label>
-                                <input type="file" id="foto" name="foto" class="hidden-file-input">
-                            </div>
-
-                            <button type="submit" class="primary-btn save-create-btn update-submit-btn">
-                                Actualizar persona
-                            </button>
-                        </div>
-
+                    <div class="field-box">
+                      <label>Apellidos</label>
+                      <input
+                        type="text"
+                        name="apellidos"
+                        value="{{ persona.apellidos }}"
+                        required
+                      />
                     </div>
+                    <div class="field-box">
+                      <label>Celular</label>
+                      <input
+                        type="text"
+                        name="numero_celular"
+                        value="{{ persona.numero_celular }}"
+                        pattern="[0-9]{10}"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                </form>
+              <div class="update-compact-right">
+                <div class="profile-card compact-profile-card">
+                  <h3>Foto de perfil</h3>
+                  {% if persona.url_foto_perfil %}
+                  <div class="photo-preview big-photo-preview">
+                    <img
+                      src="http://localhost:9000/fotos-personas/{{ persona.url_foto_perfil }}"
+                      alt="Foto actual"
+                    />
+                  </div>
+                  {% else %}
+                  <div class="photo-placeholder">Sin foto</div>
+                  {% endif %}
 
-            </section>
-
-            {% else %}
-
-            <section class="summary-box">
-                <h2>No se encontró la persona</h2>
-                <p>No fue posible cargar la información.</p>
-            </section>
-
-            {% endif %}
-
+                  <input
+                    type="file"
+                    id="foto"
+                    name="foto"
+                    class="hidden-file-input"
+                  />
+                  <button
+                    type="submit"
+                    class="primary-btn save-create-btn update-submit-btn"
+                  >
+                    Actualizar persona
+                  </button>
+                </div>
+              </div>
+            </form>
+          </section>
+          {% else %}
+          <section class="summary-box">
+            <h2>No se encontró la persona</h2>
+            <p>
+              Por favor, regrese al menú principal y busque un documento válido.
+            </p>
+            <a href="/menu" class="primary-btn">Volver al inicio</a>
+          </section>
+          {% endif %}
         </main>
-
+      </div>
     </div>
-</div>
-
-</body>
+  </body>
 </html>

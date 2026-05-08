@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, render_template_string, redirect, url_for, session
+from flask import Flask, request, render_template, redirect, url_for, session
 import requests
 import os
 import docker
@@ -214,7 +214,10 @@ def resume_container(name):
 
 @app.route("/llamado_logs")
 def llamado_logs():
-    return render_template("logs.html")
+    return render_template(
+        "logs.html",
+        rol_usuario=session.get("rol_usuario")
+    )
 
 
 @app.route("/busqueda_logs", methods=["GET"])
@@ -229,7 +232,11 @@ def busqueda_logs():
 
         logs = response.json().get("logs", []) if response.status_code == 200 else []
 
-        return render_template("resultado_logs.html", logs=logs)
+        return render_template(
+            "resultado_logs.html",
+            logs=logs,
+            rol_usuario=session.get("rol_usuario")
+        )
 
     except Exception as e:
         return f"❌ Error conectando con el microservicio: {str(e)}"
@@ -246,42 +253,144 @@ def busqueda_logs2():
 
         logs = response.json().get("logs", []) if response.status_code == 200 else []
 
-        return render_template("resultado_logs.html", logs=logs)
+        return render_template(
+            "resultado_logs.html",
+            logs=logs,
+            rol_usuario=session.get("rol_usuario")
+        )
 
     except Exception as e:
         return f"❌ Error conectando con el microservicio: {str(e)}"
 
 
-@app.route("/formulario_eliminar")
-def formulario_eliminar():
-    return render_template("formulario_eliminar.html")
+@app.route("/formulario_crear")
+def formulario_crear():
+    return render_template(
+        "formulario_crear.html",
+        email=session.get("user", "Invitado"),
+        rol_usuario=session.get("rol_usuario")
+    )
 
 
-@app.route("/eliminar_persona", methods=["GET"])
-def eliminar_persona():
+@app.route("/crear_persona", methods=["POST"])
+def crear_persona():
     try:
-        numero_documento = request.args.get("numero_documento")
         documento = session.get("numero_documento", "")
 
-        response = requests.get(
-            f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}/{documento}"
+        files = {}
+
+        if "foto" in request.files and request.files["foto"].filename != "":
+            files["foto"] = (
+                request.files["foto"].filename,
+                request.files["foto"],
+                request.files["foto"].content_type
+            )
+
+        response = requests.post(
+            f"{OP_CREATE_URL}/crear_persona/{documento}",
+            data=request.form,
+            files=files
         )
 
         return render_template(
-            "resultado_eliminar.html",
-            mensaje=response.text
+            "resultado_crear.html",
+            mensaje=response.text,
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario")
         )
 
     except Exception as e:
-        print(f"Error eliminando persona: {str(e)}")
-        return f"❌ Error eliminando persona: {str(e)}"
+        return render_template(
+            "resultado_crear.html",
+            mensaje=f"❌ Error conectando con el microservicio: {str(e)}",
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario")
+        )
 
+
+@app.route("/formulario_actualizar")
+def formulario_actualizar():
+    rol = session.get("rol_usuario", "").lower()
+
+    if rol == "user":
+        return redirect(url_for("buscar_actualizar"))
+
+    return render_template(
+        "buscar_actualizar.html",
+        email=session.get("user", "Invitado"),
+        rol_usuario=rol,
+        ocultar_menu=(rol == "user")  # siempre False aquí, porque el user ya fue redirigido
+    )
+
+@app.route("/buscar_actualizar", methods=["GET"])
+def buscar_actualizar():
+
+    rol = session.get("rol_usuario", "").lower()
+
+    if rol == "user":
+        numero_documento = session.get("numero_documento")
+    else:
+        numero_documento = request.args.get("numero_documento")
+
+    persona = obtener_persona(numero_documento) if numero_documento else None
+
+    return render_template(
+        "formulario_actualizar.html",
+        persona=persona,
+        email=session.get("user", "Invitado"),
+        rol_usuario=rol,
+        ocultar_menu=(rol == "user")
+    )
+
+
+@app.route("/actualizar_persona", methods=["POST"])
+def actualizar_persona():
+
+    try:
+
+        files = {}
+
+        if "foto" in request.files and request.files["foto"].filename != "":
+
+            files["foto"] = (
+                request.files["foto"].filename,
+                request.files["foto"],
+                request.files["foto"].content_type
+            )
+
+        documento_auditor = session.get("numero_documento", "")
+
+        response = requests.post(
+            f"{OP_UPDATE_URL}/actualizar_persona/{documento_auditor}",
+            data=request.form,
+            files=files
+        )
+
+        return render_template(
+            "resultado_actualizar.html",
+            mensaje=response.text,
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario", "").lower(),
+            ocultar_menu=(session.get("rol_usuario", "").lower() == "user")
+        )
+
+    except Exception as e:
+
+        return render_template(
+            "resultado_actualizar.html",
+            mensaje=f"❌ Error interno: {str(e)}",
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario", "").lower(),
+            ocultar_menu=(session.get("rol_usuario", "").lower() == "user")
+        )
 
 @app.route("/formulario_consultar")
 def formulario_consultar():
     return render_template(
         "formulario_consultar.html",
-        status=app.consultar_status
+        status=app.consultar_status,
+        email=session.get("user", "Invitado"),
+        rol_usuario=session.get("rol_usuario")
     )
 
 
@@ -292,7 +401,9 @@ def consultar_persona():
 
     return render_template(
         "resultado_consulta.html",
-        persona=persona
+        persona=persona,
+        email=session.get("user", "Invitado"),
+        rol_usuario=session.get("rol_usuario")
     )
 
 
@@ -330,94 +441,41 @@ def obtener_persona(numero_documento):
         return None
 
 
-@app.route("/formulario_actualizar")
-def formulario_actualizar():
-    numero_documento = session.get("numero_documento")
-    persona = obtener_persona(numero_documento) if numero_documento else None
-
+@app.route("/formulario_eliminar")
+def formulario_eliminar():
     return render_template(
-        "formulario_actualizar.html",
-        persona=persona
-    )
-
-
-@app.route("/actualizar_persona", methods=["POST"])
-def actualizar_persona():
-    try:
-        files = {}
-
-        if "foto" in request.files and request.files["foto"].filename != "":
-            files["foto"] = (
-                request.files["foto"].filename,
-                request.files["foto"],
-                request.files["foto"].content_type
-            )
-
-        documento = session.get("numero_documento", "")
-
-        response = requests.post(
-            f"{OP_UPDATE_URL}/actualizar_persona/{documento}",
-            data=request.form,
-            files=files
-        )
-
-        session["rol_usuario"] = request.form.get("rol_usuario")
-        session["numero_documento"] = request.form.get("numero_documento")
-        session["user"] = request.form.get("correo_electronico")
-
-        return render_template_string("""
-        <h1>RESULTADO DE ACTUALIZACIÓN</h1>
-        <p>{{ mensaje }}</p>
-
-        <br>
-        <a href="/formulario_actualizar">⬅ Realizar otra actualización</a><br>
-        <a href="/menu">⬅ Volver al menú</a>
-        """, mensaje=response.text)
-
-    except Exception as e:
-        return f"❌ Error conectando con el microservicio: {str(e)}"
-
-
-@app.route("/formulario_crear")
-def formulario_crear():
-    return render_template(
-        "formulario_crear.html",
+        "formulario_eliminar.html",
         email=session.get("user", "Invitado"),
         rol_usuario=session.get("rol_usuario")
     )
 
 
-@app.route("/crear_persona", methods=["POST"])
-def crear_persona():
+@app.route("/eliminar_persona", methods=["GET"])
+def eliminar_persona():
     try:
+        numero_documento = request.args.get("numero_documento")
         documento = session.get("numero_documento", "")
 
-        files = {}
-
-        if "foto" in request.files and request.files["foto"].filename != "":
-            files["foto"] = (
-                request.files["foto"].filename,
-                request.files["foto"],
-                request.files["foto"].content_type
-            )
-
-        response = requests.post(
-            f"{OP_CREATE_URL}/crear_persona/{documento}",
-            data=request.form,
-            files=files
+        response = requests.get(
+            f"{OP_DELETE_URL}/eliminar_persona/{numero_documento}/{documento}"
         )
 
-        return render_template_string("""
-        <h1>RESULTADO DE CREACIÓN</h1>
-        <p>{{ mensaje }}</p>
-
-        <br>
-        <a href="/formulario_crear">⬅ Realizar otra creación</a><br>
-        <a href="/menu">⬅ Volver al menú</a>
-        """, mensaje=response.text)
+        return render_template(
+            "resultado_eliminar.html",
+            mensaje=response.text,
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario")
+        )
 
     except Exception as e:
-        return f"❌ Error conectando con el microservicio: {str(e)}"
+        print(f"Error eliminando persona: {str(e)}")
+
+        return render_template(
+            "resultado_eliminar.html",
+            mensaje=f"❌ Error eliminando persona: {str(e)}",
+            email=session.get("user", "Invitado"),
+            rol_usuario=session.get("rol_usuario")
+        )
 
 
 if __name__ == "__main__":

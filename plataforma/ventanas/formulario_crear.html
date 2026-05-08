@@ -1,213 +1,328 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Crear persona</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estilos/styles.css') }}">
-</head>
-<body>
-
-<div class="dashboard-page">
-    <div class="dashboard-card">
-
-        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='estilos/styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="dashboard-page">
+      <div class="dashboard-card">
+        <input type="checkbox" id="sidebarToggle" class="sidebar-toggle" />
 
         <aside class="sidebar collapsed">
-            <label for="sidebarToggle" class="toggle-btn">↗</label>
+          <label for="sidebarToggle" class="toggle-btn">↗</label>
 
-            <nav class="sidebar-menu">
-                <a href="/menu" title="Panel principal">
-                    <img src="{{ url_for('static', filename='estilos/iconos/casa.png') }}" class="menu-icon">
-                    <span class="menu-text">Panel principal</span>
-                </a>
-
-                <a href="/formulario_crear" title="Crear persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}" class="menu-icon">
-                    <span class="menu-text">Crear persona</span>
-                </a>
-
-                <a href="/formulario_actualizar" title="Actualizar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/editar.png') }}" class="menu-icon">
-                    <span class="menu-text">Actualizar persona</span>
-                </a>
-
-                <a href="/formulario_consultar" title="Consultar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}" class="menu-icon">
-                    <span class="menu-text">Consultar persona</span>
-                </a>
-
-                <a href="/formulario_eliminar" title="Eliminar persona">
-                    <img src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}" class="menu-icon">
-                    <span class="menu-text">Eliminar persona</span>
-                </a>
-
-                <a href="/llamado_logs" title="Vista de logs">
-                    <img src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}" class="menu-icon">
-                    <span class="menu-text">Vista de logs</span>
-                </a>
-            </nav>
+          <nav class="sidebar-menu">
+            {% if rol_usuario == "admin" %}
+            <a href="/menu"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/casa.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Panel principal</span></a
+            >
+            <a href="/formulario_crear"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Crear persona</span></a
+            >
+            <a href="/formulario_actualizar"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Actualizar persona</span></a
+            >
+            <a href="/formulario_consultar"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Consultar persona</span></a
+            >
+            <a href="/formulario_eliminar"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Eliminar persona</span></a
+            >
+            <a href="/llamado_logs"
+              ><img
+                src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}"
+                class="menu-icon"
+              /><span class="menu-text">Vista de logs</span></a
+            >
+            {% endif %}
+          </nav>
+          <form action="/logout" method="post" class="logout-form">
+            <button type="submit" title="Cerrar sesión">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/salida.png') }}"
+                class="menu-icon"
+              />
+              <span class="menu-text">Cerrar sesión</span>
+            </button>
+          </form>
         </aside>
 
         <main class="dashboard-content">
+          <div class="topbar">
+            <div>
+              <h1>Creación de persona</h1>
+              <p>Bienvenido, {{ email }}</p>
+            </div>
+          </div>
 
-            <div class="topbar">
-                <div>
-                    <h1>Creación de persona</h1>
-                    <p>Bienvenido, {{ email }}</p>
-                </div>
+          <section class="wizard-create-box">
+            <div class="wizard-left">
+              <div class="step active" id="step-indicator-1">
+                <img
+                  src="{{ url_for('static', filename='estilos/iconos/datos_personales.png') }}"
+                  class="menu-icon"
+                />
+                <p>Datos personales</p>
+              </div>
+
+              <div class="step" id="step-indicator-2">
+                <img
+                  src="{{ url_for('static', filename='estilos/iconos/seguridad.png') }}"
+                  class="menu-icon"
+                />
+                <p>Tipo de persona</p>
+              </div>
+
+              <div class="step" id="step-indicator-3">
+                <img
+                  src="{{ url_for('static', filename='estilos/iconos/subir.png') }}"
+                  class="menu-icon"
+                />
+                <p>Montar archivo</p>
+              </div>
             </div>
 
-            <section class="wizard-create-box">
+            <div class="wizard-right">
+              <h2>Crear persona</h2>
 
-                <div class="wizard-left">
-                    <div class="step active" id="step-indicator-1">
-                        <img src="{{ url_for('static', filename='estilos/iconos/datos_personales.png') }}" class="menu-icon">
-                        <p>Datos personales</p>
-                    </div>
+              <form
+                action="{{ url_for('crear_persona') }}"
+                method="post"
+                enctype="multipart/form-data"
+                id="crearPersonaForm"
+              >
+                <div class="form-step active" id="step-1">
+                  <div class="form-section">
+                    <h3>Datos personales</h3>
 
-                    <div class="step" id="step-indicator-2">
-                        <img src="{{ url_for('static', filename='estilos/iconos/seguridad.png') }}" class="menu-icon">
-                        <p>Tipo de persona</p>
-                    </div>
+                    <div class="form-grid">
+                      <input
+                        type="text"
+                        name="numero_documento"
+                        placeholder="Documento"
+                        maxlength="10"
+                        pattern="[0-9]+"
+                        required
+                      />
 
-                    <div class="step" id="step-indicator-3">
-                        <img src="{{ url_for('static', filename='estilos/iconos/subir.png') }}" class="menu-icon">
-                        <p>Montar archivo</p>
+                      <select name="tipo_documento_identidad" required>
+                        <option value="">Tipo de documento</option>
+                        <option value="TI">Tarjeta de identidad</option>
+                        <option value="CC">Cédula</option>
+                      </select>
+
+                      <input
+                        type="text"
+                        name="primer_nombre"
+                        placeholder="Primer nombre"
+                        maxlength="30"
+                        pattern="[A-Za-z ]+"
+                        required
+                      />
+
+                      <input
+                        type="text"
+                        name="segundo_nombre"
+                        placeholder="Segundo nombre"
+                        maxlength="30"
+                        pattern="[A-Za-z ]+"
+                      />
+
+                      <input
+                        type="text"
+                        name="apellidos"
+                        placeholder="Apellidos"
+                        maxlength="60"
+                        pattern="[A-Za-z ]+"
+                        required
+                      />
+
+                      <select name="genero_persona" required>
+                        <option value="">Género</option>
+                        <option>Masculino</option>
+                        <option>Femenino</option>
+                        <option>No binario</option>
+                        <option>Prefiero no reportar</option>
+                      </select>
+
+                      <input
+                        type="text"
+                        name="numero_celular"
+                        placeholder="Celular"
+                        maxlength="10"
+                        pattern="[0-9]{10}"
+                        required
+                      />
+
+                      <div class="date-field">
+                        <label>Fecha de nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" required />
+                      </div>
                     </div>
+                  </div>
+
+                  <div class="wizard-buttons">
+                    <button
+                      type="button"
+                      class="primary-btn"
+                      onclick="nextStep(1)"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
                 </div>
 
-                <div class="wizard-right">
-                    <h2>Crear persona</h2>
+                <div class="form-step" id="step-2">
+                  <div class="form-section">
+                    <h3>Tipo de persona</h3>
 
-                    <form action="{{ url_for('crear_persona') }}" method="post" enctype="multipart/form-data" id="crearPersonaForm">
+                    <div class="form-grid">
+                      <input
+                        type="email"
+                        name="correo_electronico"
+                        placeholder="Correo electrónico"
+                        required
+                      />
 
-                        <div class="form-step active" id="step-1">
-                            <div class="form-section">
-                                <h3>Datos personales</h3>
+                      <input
+                        type="password"
+                        name="password"
+                        placeholder="Contraseña"
+                        required
+                      />
 
-                                <div class="form-grid">
-                                    <input type="text" name="numero_documento" placeholder="Documento" maxlength="10" pattern="[0-9]+" required>
+                      <select name="rol_usuario" required>
+                        <option value="">Tipo de persona</option>
+                        <option>admin</option>
+                        <option>user</option>
+                      </select>
+                    </div>
+                  </div>
 
-                                    <select name="tipo_documento_identidad" required>
-                                        <option value="">Tipo de documento</option>
-                                        <option value="TI">Tarjeta de identidad</option>
-                                        <option value="CC">Cédula</option>
-                                    </select>
-
-                                    <input type="text" name="primer_nombre" placeholder="Primer nombre" maxlength="30" pattern="[A-Za-z ]+" required>
-
-                                    <input type="text" name="segundo_nombre" placeholder="Segundo nombre" maxlength="30" pattern="[A-Za-z ]+">
-
-                                    <input type="text" name="apellidos" placeholder="Apellidos" maxlength="60" pattern="[A-Za-z ]+" required>
-
-                                    <select name="genero_persona" required>
-                                        <option value="">Género</option>
-                                        <option>Masculino</option>
-                                        <option>Femenino</option>
-                                        <option>No binario</option>
-                                        <option>Prefiero no reportar</option>
-                                    </select>
-
-                                    <input type="text" name="numero_celular" placeholder="Celular" maxlength="10" pattern="[0-9]{10}" required>
-
-                                    <div class="date-field">
-                                        <label>Fecha de nacimiento</label>
-                                        <input type="date" name="fecha_nacimiento" required>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="wizard-buttons">
-                                <button type="button" class="primary-btn" onclick="nextStep(1)">Siguiente</button>
-                            </div>
-                        </div>
-
-                        <div class="form-step" id="step-2">
-                            <div class="form-section">
-                                <h3>Tipo de persona</h3>
-
-                                <div class="form-grid">
-                                    <input type="email" name="correo_electronico" placeholder="Correo electrónico" required>
-
-                                    <input type="password" name="password" placeholder="Contraseña" required>
-
-                                    <select name="rol_usuario" required>
-                                        <option value="">Tipo de persona</option>
-                                        <option>admin</option>
-                                        <option>user</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="wizard-buttons">
-                                <button type="button" class="secondary-btn" onclick="prevStep(2)">Volver</button>
-                                <button type="button" class="primary-btn" onclick="nextStep(2)">Siguiente</button>
-                            </div>
-                        </div>
-
-                        <div class="form-step" id="step-3">
-                            <div class="form-section">
-                                <h3>Montar archivo</h3>
-
-                                <div class="file-box">
-                                    <input type="file" name="foto" required>
-                                </div>
-                            </div>
-
-                            <div class="wizard-buttons">
-                                <button type="button" class="secondary-btn" onclick="prevStep(3)">Volver</button>
-                                <button type="submit" class="primary-btn save-create-btn">Guardar persona</button>
-                            </div>
-                        </div>
-
-                    </form>
+                  <div class="wizard-buttons">
+                    <button
+                      type="button"
+                      class="secondary-btn"
+                      onclick="prevStep(2)"
+                    >
+                      Volver
+                    </button>
+                    <button
+                      type="button"
+                      class="primary-btn"
+                      onclick="nextStep(2)"
+                    >
+                      Siguiente
+                    </button>
+                  </div>
                 </div>
 
-            </section>
+                <div class="form-step" id="step-3">
+                  <div class="form-section">
+                    <h3>Montar archivo</h3>
 
+                    <div class="file-box">
+                      <input type="file" name="foto" required />
+                    </div>
+                  </div>
+
+                  <div class="wizard-buttons">
+                    <button
+                      type="button"
+                      class="secondary-btn"
+                      onclick="prevStep(3)"
+                    >
+                      Volver
+                    </button>
+                    <button type="submit" class="primary-btn save-create-btn">
+                      Guardar persona
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
         </main>
-
+      </div>
     </div>
-</div>
 
-<script>
-    function validateStep(stepNumber) {
+    <script>
+      function validateStep(stepNumber) {
         const step = document.getElementById("step-" + stepNumber);
         const fields = step.querySelectorAll("input, select");
 
         for (let field of fields) {
-            if (!field.checkValidity()) {
-                field.reportValidity();
-                return false;
-            }
+          if (!field.checkValidity()) {
+            field.reportValidity();
+            return false;
+          }
         }
 
         return true;
-    }
+      }
 
-    function nextStep(currentStep) {
+      function nextStep(currentStep) {
         if (!validateStep(currentStep)) {
-            return;
+          return;
         }
 
-        document.getElementById("step-" + currentStep).classList.remove("active");
-        document.getElementById("step-" + (currentStep + 1)).classList.add("active");
+        document
+          .getElementById("step-" + currentStep)
+          .classList.remove("active");
+        document
+          .getElementById("step-" + (currentStep + 1))
+          .classList.add("active");
 
-        document.getElementById("step-indicator-" + currentStep).classList.remove("active");
-        document.getElementById("step-indicator-" + currentStep).classList.add("completed");
+        document
+          .getElementById("step-indicator-" + currentStep)
+          .classList.remove("active");
+        document
+          .getElementById("step-indicator-" + currentStep)
+          .classList.add("completed");
 
-        document.getElementById("step-indicator-" + (currentStep + 1)).classList.add("active");
-    }
+        document
+          .getElementById("step-indicator-" + (currentStep + 1))
+          .classList.add("active");
+      }
 
-    function prevStep(currentStep) {
-        document.getElementById("step-" + currentStep).classList.remove("active");
-        document.getElementById("step-" + (currentStep - 1)).classList.add("active");
+      function prevStep(currentStep) {
+        document
+          .getElementById("step-" + currentStep)
+          .classList.remove("active");
+        document
+          .getElementById("step-" + (currentStep - 1))
+          .classList.add("active");
 
-        document.getElementById("step-indicator-" + currentStep).classList.remove("active");
-        document.getElementById("step-indicator-" + (currentStep - 1)).classList.add("active");
-        document.getElementById("step-indicator-" + (currentStep - 1)).classList.remove("completed");
-    }
-</script>
-
-</body>
+        document
+          .getElementById("step-indicator-" + currentStep)
+          .classList.remove("active");
+        document
+          .getElementById("step-indicator-" + (currentStep - 1))
+          .classList.add("active");
+        document
+          .getElementById("step-indicator-" + (currentStep - 1))
+          .classList.remove("completed");
+      }
+    </script>
+  </body>
 </html>

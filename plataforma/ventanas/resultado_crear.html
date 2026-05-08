@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Consultar persona</title>
+    <title>Resultado creación</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='estilos/styles.css') }}"
@@ -70,70 +70,29 @@
         <main class="dashboard-content">
           <div class="topbar">
             <div>
-              <h1>Consultar persona</h1>
-              <p>Busca una persona por número de documento</p>
+              <h1>Resultado de creación</h1>
+              <p>Respuesta del sistema</p>
             </div>
           </div>
 
-          <section class="consult-search-box">
-            {% if status %}
+          <section class="create-result-box">
+            <div class="create-result-card">
+              <img
+                src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
+                class="create-result-icon"
+              />
 
-            <div class="consult-search-card">
-              <h2>Buscar datos personales</h2>
-              <p>Ingresa el número de documento que deseas consultar.</p>
+              <h2>Proceso finalizado</h2>
 
-              <form
-                action="{{ url_for('consultar_persona') }}"
-                method="get"
-                class="consult-search-form"
-              >
-                <div class="field-box">
-                  <label>Número de documento</label>
-                  <input
-                    type="text"
-                    name="numero_documento"
-                    maxlength="10"
-                    pattern="[0-9]+"
-                    required
-                  />
-                </div>
+              <div class="result-message success-result-message">
+                <p>{{ mensaje }}</p>
+              </div>
 
-                <button type="submit" class="primary-btn search-person-btn">
-                  Consultar persona
-                </button>
-              </form>
-            </div>
-
-            {% else %}
-
-            <div class="empty-message">
-              <p>El microservicio de consulta no está disponible</p>
-            </div>
-
-            {% endif %}
-
-            <div class="service-actions consult-service-actions">
-              {% if status %}
-              <!-- Si está activo SOLO muestra pausar -->
-              <form action="{{ url_for('pause_route') }}" method="post">
-                <input type="hidden" name="container_name" value="op-read" />
-
-                <button type="submit" class="warning-btn">
-                  Pausar consulta
-                </button>
-              </form>
-
-              {% else %}
-              <!-- Si está pausado SOLO muestra reanudar -->
-              <form action="{{ url_for('resume_route') }}" method="post">
-                <input type="hidden" name="container_name" value="op-read" />
-
-                <button type="submit" class="success-btn">
-                  Reanudar consulta
-                </button>
-              </form>
-
-              {% endif %}
+              <div class="create-result-actions">
+                <a href="{{ url_for('formulario_crear') }}" class="primary-btn"
+                  >Crear otra persona</a
+                >
+              </div>
             </div>
           </section>
         </main>

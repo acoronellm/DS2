@@ -2,7 +2,7 @@
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <title>Consultar persona</title>
+    <title>Buscar persona</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='estilos/styles.css') }}"
@@ -17,45 +17,78 @@
           <label for="sidebarToggle" class="toggle-btn">↗</label>
 
           <nav class="sidebar-menu">
-            {% if rol_usuario == "admin" %}
-            <a href="/menu"
-              ><img
+            <!-- PANEL PRINCIPAL (aparece tanto en admin como usuario) -->
+            <a href="/menu" title="Panel principal">
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/casa.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Panel principal</span></a
-            >
-            <a href="/formulario_crear"
-              ><img
+              />
+              <span class="menu-text">Panel principal</span>
+            </a>
+
+            <!-- CREAR (solo admin) -->
+            {% if not ocultar_menu %} {% if rol_usuario|lower == "admin" %}
+
+            <a href="/formulario_crear" title="Crear persona">
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/Imagen4.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Crear persona</span></a
+              />
+              <span class="menu-text">Crear persona</span>
+            </a>
+
+            {% endif %} {% endif %}
+
+            <!-- ACTUALIZAR (Solo aparece si es usuario) -->
+            <a
+              href="/formulario_actualizar"
+              title="Actualizar persona"
+              class="active-link"
             >
-            <a href="/formulario_actualizar"
-              ><img
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/editar.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Actualizar persona</span></a
-            >
-            <a href="/formulario_consultar"
-              ><img
+              />
+
+              <span class="menu-text">
+                {% if rol_usuario|lower == "admin" %} Actualizar persona {% else
+                %} Actualizar mis datos {% endif %}
+              </span>
+            </a>
+
+            <!-- CONSULTAR (solo admin)-->
+            {% if not ocultar_menu %} {% if rol_usuario|lower == "admin" %}
+
+            <a href="/formulario_consultar" title="Consultar persona">
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/buscar_persona.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Consultar persona</span></a
-            >
-            <a href="/formulario_eliminar"
-              ><img
+              />
+              <span class="menu-text">Consultar persona</span>
+            </a>
+
+            <!-- ELIMINAR (solo admin)-->
+            <a href="/formulario_eliminar" title="Eliminar persona">
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/eliminar.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Eliminar persona</span></a
-            >
-            <a href="/llamado_logs"
-              ><img
+              />
+              <span class="menu-text">Eliminar persona</span>
+            </a>
+
+            <!-- LOGS (solo admin)-->
+            <a href="/llamado_logs" title="Vista de logs">
+              <img
                 src="{{ url_for('static', filename='estilos/iconos/buscar.png') }}"
                 class="menu-icon"
-              /><span class="menu-text">Vista de logs</span></a
-            >
-            {% endif %}
+              />
+              <span class="menu-text">Vista de logs</span>
+            </a>
+
+            {% endif %} {% endif %}
           </nav>
+
+          <!-- LOGOUT -->
           <form action="/logout" method="post" class="logout-form">
             <button type="submit" title="Cerrar sesión">
               <img
@@ -70,20 +103,18 @@
         <main class="dashboard-content">
           <div class="topbar">
             <div>
-              <h1>Consultar persona</h1>
-              <p>Busca una persona por número de documento</p>
+              <h1>Actualizar persona</h1>
+              <p>Busca primero la persona que deseas modificar</p>
             </div>
           </div>
 
           <section class="consult-search-box">
-            {% if status %}
-
             <div class="consult-search-card">
-              <h2>Buscar datos personales</h2>
-              <p>Ingresa el número de documento que deseas consultar.</p>
+              <h2>Buscar persona</h2>
+              <p>Ingresa el número de documento para cargar sus datos.</p>
 
               <form
-                action="{{ url_for('consultar_persona') }}"
+                action="{{ url_for('buscar_actualizar') }}"
                 method="get"
                 class="consult-search-form"
               >
@@ -99,41 +130,9 @@
                 </div>
 
                 <button type="submit" class="primary-btn search-person-btn">
-                  Consultar persona
+                  Buscar persona
                 </button>
               </form>
-            </div>
-
-            {% else %}
-
-            <div class="empty-message">
-              <p>El microservicio de consulta no está disponible</p>
-            </div>
-
-            {% endif %}
-
-            <div class="service-actions consult-service-actions">
-              {% if status %}
-              <!-- Si está activo SOLO muestra pausar -->
-              <form action="{{ url_for('pause_route') }}" method="post">
-                <input type="hidden" name="container_name" value="op-read" />
-
-                <button type="submit" class="warning-btn">
-                  Pausar consulta
-                </button>
-              </form>
-
-              {% else %}
-              <!-- Si está pausado SOLO muestra reanudar -->
-              <form action="{{ url_for('resume_route') }}" method="post">
-                <input type="hidden" name="container_name" value="op-read" />
-
-                <button type="submit" class="success-btn">
-                  Reanudar consulta
-                </button>
-              </form>
-
-              {% endif %}
             </div>
           </section>
         </main>
