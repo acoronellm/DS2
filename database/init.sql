@@ -56,6 +56,17 @@ CREATE TABLE logs (
 );
 
 -- =========================
+-- TABLA HISTORIAL N8N
+-- =========================
+CREATE TABLE n8n (
+    id SERIAL PRIMARY KEY,
+    numero_documento VARCHAR(20) NOT NULL,
+    pregunta TEXT NOT NULL,
+    respuesta TEXT NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================
 -- ÍNDICES
 -- =========================
 

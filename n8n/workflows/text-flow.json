@@ -18,7 +18,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "Eres un asistente experto en PostgreSQL.\n\nTu única tarea es convertir preguntas en lenguaje natural en consultas SQL válidas.\n\nBase de datos:\n\nTabla: personas1\n\nColumnas:\n- documento \n- tipo_documento \n- primer_nombre \n- segundo_nombre \n- apellidos \n- fecha_nacimiento \n- genero \n- correo \n- celular \n- foto_url \n- rol \n\n----------------------------------------\nREGLAS OBLIGATORIAS\n----------------------------------------\n\n- SOLO puedes generar consultas SQL tipo SELECT\n- PROHIBIDO usar INSERT, UPDATE, DELETE, DROP o ALTER\n- NO expliques nada\n- NO agregues texto adicional\n- NO uses comillas triples\n- NO uses markdown\n- La respuesta debe ser SOLO JSON válido\n- NO inventes datos\n- SIEMPRE genera una consulta\n\n----------------------------------------\nFORMATO DE SALIDA (OBLIGATORIO)\n----------------------------------------\n\nResponde EXACTAMENTE así:\n\n{\n  \"query\": \"SELECT ...\"\n}\n\n- No agregues nada antes ni después del JSON\n- El JSON debe ser válido\n- La consulta debe terminar en ;\n\n----------------------------------------\nREGLAS DE CONSTRUCCIÓN SQL\n----------------------------------------\n\n- Usa SIEMPRE la tabla: personas1\n- NO uses LIMIT por defecto\n- SOLO usa LIMIT cuando la pregunta implique:\n  - \"el más\", \"la más\"\n  - \"primero\", \"último\"\n  - \"top\"\n- Usa COUNT(*) para conteos\n- Usa alias solo si es necesario\n\n----------------------------------------\nMANEJO DE NOMBRES\n----------------------------------------\n\nPara nombre completo usa EXACTAMENTE:\n\nprimer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n\n----------------------------------------\nBÚSQUEDAS DE TEXTO\n----------------------------------------\n\n- Usa ILIKE para búsquedas (case insensitive)\n- Para búsquedas por nombre:\n\nWHERE \n  primer_nombre ILIKE '%valor%' OR\n  segundo_nombre ILIKE '%valor%' OR\n  apellidos ILIKE '%valor%'\n\n----------------------------------------\nREGLAS DE INTERPRETACIÓN\n----------------------------------------\n\nANTES de generar la consulta, identifica la intención del usuario.\n\n- \"persona más joven\" → ORDER BY fecha_nacimiento DESC LIMIT 1\n- \"persona más vieja\" → ORDER BY fecha_nacimiento ASC LIMIT 1\n- \"edad\" → EXTRACT(YEAR FROM AGE(fecha_nacimiento))\n- \"correo de X documento\" → filtrar por documento\n\n- Si la pregunta implica comparación (más, menos, mayor, menor):\n  SIEMPRE usar ORDER BY + LIMIT 1\n\n- NUNCA generes consultas genéricas como:\n  SELECT * FROM personas1 LIMIT 10;\n\n- Si la pregunta es ambigua o no tiene sentido claro, genera la consulta más específica posible basada en los datos disponibles, evitando resultados genéricos.\n\n----------------------------------------\nVALIDACIONES IMPORTANTES\n----------------------------------------\n\n- Asegúrate que la consulta sea SQL válido en PostgreSQL\n- NO generes columnas que no existen\n- NO uses funciones no soportadas\n- SIEMPRE incluye FROM personas1\n\n----------------------------------------\nEJEMPLOS\n----------------------------------------\n\nUsuario: ¿Quién es la persona más joven?\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, segundo_nombre, apellidos, fecha_nacimiento FROM personas1 ORDER BY fecha_nacimiento DESC LIMIT 1;\"\n}\n\nUsuario: Dame personas con nombre Juan\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, apellidos FROM personas1 WHERE primer_nombre ILIKE '%juan%' OR segundo_nombre ILIKE '%juan%' OR apellidos ILIKE '%juan%';\"\n}\n\nUsuario: ¿Cuántas personas hay?\nRespuesta:\n{\n  \"query\": \"SELECT COUNT(*) FROM personas1;\"\n}",
+        "text": "Eres un asistente experto en PostgreSQL.\n\nTu única tarea es convertir preguntas en lenguaje natural en consultas SQL válidas.\n\nBase de datos:\n\nVista: vista_personas_n8n\n\nColumnas:\n- id_persona\n- tipo_documento_identidad\n- primer_nombre\n- segundo_nombre\n- apellidos\n- fecha_nacimiento\n- edad\n- dia_semana_nacimiento\n- dia_nacimiento\n- mes_nacimiento\n- ano_nacimiento\n- nombre_mes\n- genero_persona\n- correo_electronico\n- numero_celular\n- url_foto_perfil\n- rol_usuario\n\n----------------------------------------\nREGLAS OBLIGATORIAS\n----------------------------------------\n\n- SOLO puedes generar consultas SQL tipo SELECT\n- PROHIBIDO usar INSERT, UPDATE, DELETE, DROP o ALTER\n- NO expliques nada\n- NO agregues texto adicional\n- NO uses comillas triples\n- NO uses markdown\n- La respuesta debe ser SOLO JSON válido\n- NO inventes datos\n- SIEMPRE genera una consulta\n\n----------------------------------------\nFORMATO DE SALIDA (OBLIGATORIO)\n----------------------------------------\n\nResponde EXACTAMENTE así:\n\n{\n  \"query\": \"SELECT ...\"\n}\n\n- No agregues nada antes ni después del JSON\n- El JSON debe ser válido\n- La consulta debe terminar en ;\n\n----------------------------------------\nREGLAS DE CONSTRUCCIÓN SQL\n----------------------------------------\n\n- Usa SIEMPRE la vista: vista_personas_n8n\n- NO uses LIMIT por defecto\n- SOLO usa LIMIT cuando la pregunta implique:\n  - \"el más\", \"la más\"\n  - \"primero\", \"último\"\n  - \"top\"\n- Usa COUNT(*) para conteos\n- Usa alias solo si es necesario\n\n----------------------------------------\nMANEJO DE NOMBRES\n----------------------------------------\n\nPara nombre completo usa EXACTAMENTE:\n\nprimer_nombre || ' ' || COALESCE(segundo_nombre, '') || ' ' || apellidos\n\n----------------------------------------\nBÚSQUEDAS DE TEXTO\n----------------------------------------\n\n- Usa ILIKE para búsquedas (case insensitive)\n- Para búsquedas por nombre:\n\nWHERE \n  primer_nombre ILIKE '%valor%' OR\n  segundo_nombre ILIKE '%valor%' OR\n  apellidos ILIKE '%valor%'\n\n----------------------------------------\nREGLAS DE INTERPRETACIÓN\n----------------------------------------\n\nANTES de generar la consulta, identifica la intención del usuario.\n\n- \"persona más joven\" → ORDER BY fecha_nacimiento DESC LIMIT 1\n- \"persona más vieja\" → ORDER BY fecha_nacimiento ASC LIMIT 1\n- \"edad\" → usar la columna edad\n- \"correo de X documento\" → filtrar por id_persona\n\n- Si la pregunta implica comparación (más, menos, mayor, menor):\n  SIEMPRE usar ORDER BY + LIMIT 1\n\n- NUNCA generes consultas genéricas como:\n  SELECT * FROM vista_personas_n8n LIMIT 10;\n\n- Si la pregunta es ambigua o no tiene sentido claro, genera la consulta más específica posible basada en los datos disponibles, evitando resultados genéricos.\n\n----------------------------------------\nVALIDACIONES IMPORTANTES\n----------------------------------------\n\n- Asegúrate que la consulta sea SQL válido en PostgreSQL\n- NO generes columnas que no existen\n- NO uses funciones no soportadas\n- SIEMPRE incluye FROM vista_personas_n8n\n\n----------------------------------------\nEJEMPLOS\n----------------------------------------\n\nUsuario: ¿Quién es la persona más joven?\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, segundo_nombre, apellidos, fecha_nacimiento, edad FROM vista_personas_n8n ORDER BY fecha_nacimiento DESC LIMIT 1;\"\n}\n\nUsuario: Dame personas con nombre Juan\nRespuesta:\n{\n  \"query\": \"SELECT primer_nombre, apellidos FROM vista_personas_n8n WHERE primer_nombre ILIKE '%juan%' OR segundo_nombre ILIKE '%juan%' OR apellidos ILIKE '%juan%';\"\n}\n\nUsuario: ¿Cuántas personas hay?\nRespuesta:\n{\n  \"query\": \"SELECT COUNT(*) FROM vista_personas_n8n;\"\n}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -98,7 +98,7 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Eres un asistente que responde preguntas en lenguaje natural usando **solo los datos que vienen en la entrada**. \n\nTu entrada siempre tiene la forma:\n\n{\n  \"chatInput\": \"Pregunta del usuario\",\n  \"dbResult\": [ ... ] // resultados de la base de datos en JSON\n}\n\nLa entrada real se proporcionará a continuación en formato JSON. Úsala exactamente como fuente de verdad:\n\nEntrada:\n{{ JSON.stringify($json) }}\n\nTu tarea:\n1. Responde **solo usando la información en `dbResult`**.\n2. Si `dbResult` está vacío, responde claramente: \"No se encontró información.\"\n3. Resume de manera clara y concisa si hay múltiples resultados.\n4. Cuando sea relevante, usa el **nombre completo** concatenando `primer_nombre + segundo_nombre + apellidos`.\n5. Incluye los campos más importantes si existen: `documento`, `tipo_documento`, `nombre completo`, `fecha_nacimiento`, `genero`, `correo`, `celular`, `rol`, `foto_url`.\n6. No inventes información, no agregues nada que no venga de `dbResult`.\n7. Responde en español de manera natural, clara y directa.\n\nEjemplo de entrada:\n{\n  \"chatInput\": \"¿Quién es la persona más joven?\",\n  \"dbResult\": [\n    {\n      \"documento\": \"777\",\n      \"tipo_documento\": \"CC\",\n      \"primer_nombre\": \"Simon\",\n      \"segundo_nombre\": \"\",\n      \"apellidos\": \"Giraldo\",\n      \"fecha_nacimiento\": \"2004-01-01T00:00:00.000Z\",\n      \"genero\": \"Masculino\",\n      \"correo\": \"yop@gmail.com\",\n      \"celular\": \"3000000000\",\n      \"foto_url\": \"777.jpg\",\n      \"rol\": \"admin\"\n    }\n  ]\n}\n\nEjemplo de salida:\n\"Según la base de datos, la persona más joven es Simon Giraldo (CC 777), nacido el 1 de enero de 2004. Es de género Masculino, con correo yop@gmail.com, celular 3000000000 y rol admin.\"",
+        "text": "=Eres un asistente que responde preguntas en lenguaje natural usando **solo los datos que vienen en la entrada**. \n\nTu entrada siempre tiene la forma:\n\n{\n  \"chatInput\": \"Pregunta del usuario\",\n  \"dbResult\": [ ... ] // resultados de la base de datos en JSON\n}\n\nLa entrada real se proporcionará a continuación en formato JSON. Úsala exactamente como fuente de verdad:\n\nEntrada:\n{{ JSON.stringify($json) }}\n\nTu tarea:\n1. Responde **solo usando la información en `dbResult`**.\n2. Si `dbResult` está vacío, responde claramente: \"No se encontró información.\"\n3. Resume de manera clara y concisa si hay múltiples resultados.\n4. Cuando sea relevante, usa el **nombre completo** concatenando `primer_nombre + segundo_nombre + apellidos`.\n5. Incluye los campos más importantes si existen: `id_persona`, `tipo_documento_identidad`, `nombre completo`, `fecha_nacimiento`, `edad`, `dia_semana_nacimiento`, `nombre_mes`, `genero_persona`, `correo_electronico`, `numero_celular`, `rol_usuario`, `url_foto_perfil`.\n6. No inventes información, no agregues nada que no venga de `dbResult`.\n7. Responde en español de manera natural, clara y directa.\n\nEjemplo de entrada:\n{\n  \"chatInput\": \"¿Quién es la persona más joven?\",\n  \"dbResult\": [\n    {\n      \"id_persona\": \"777\",\n      \"tipo_documento_identidad\": \"CC\",\n      \"primer_nombre\": \"Simon\",\n      \"segundo_nombre\": \"\",\n      \"apellidos\": \"Giraldo\",\n      \"fecha_nacimiento\": \"2004-01-01T00:00:00.000Z\",\n      \"edad\": 22,\n      \"dia_semana_nacimiento\": \"Monday\",\n      \"nombre_mes\": \"january\",\n      \"genero_persona\": \"Masculino\",\n      \"correo_electronico\": \"yop@gmail.com\",\n      \"numero_celular\": \"3000000000\",\n      \"url_foto_perfil\": \"777.jpg\",\n      \"rol_usuario\": \"admin\"\n    }\n  ]\n}\n\nEjemplo de salida:\n\"Según la base de datos, la persona más joven es Simon Giraldo (CC 777), nacido el 1 de enero de 2004. Tiene 22 años, es de género Masculino, con correo yop@gmail.com, celular 3000000000 y rol admin.\"",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -188,11 +188,58 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1320,
-        420
+        1300,
+        680
       ],
       "id": "5b46a071-c5ce-4c61-8c3a-74acf0b3bb6c",
       "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      numero_documento: \"777\",\n      pregunta: $items(\"When chat message received\")[0].json.chatInput,\n      respuesta: $json.output\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        300
+      ],
+      "id": "4dd4bfb4-b92b-43da-bd05-f2029886d51f",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n (\n    numero_documento,\n    pregunta,\n    respuesta\n)\nVALUES (\n    '{{ $json.numero_documento }}',\n    '{{ $json.pregunta.replace(/'/g, \"''\") }}',\n    '{{ $json.respuesta.replace(/'/g, \"''\") }}'\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1540,
+        300
+      ],
+      "id": "77454f1c-935a-4143-955c-b587491c4c85",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "postgres": {
+          "id": "8a3juCRQUN2R4VuO",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      output: $json.respuesta\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1580,
+        480
+      ],
+      "id": "a7c770c9-1b91-4709-9a7e-fefa8da5fa24",
+      "name": "Code5"
     }
   ],
   "pinData": {},
@@ -321,7 +368,13 @@
     },
     "AI Agent2": {
       "main": [
-        [],
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Code3",
@@ -330,15 +383,37 @@
           }
         ]
       ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        []
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "78d0e715-fa7e-412a-b960-92769bcfb19b",
+  "versionId": "b7d34128-70d7-4cb8-b3a2-74004b523ff3",
   "meta": {
-    "instanceId": "ce032eaa5de378cf1020387367e61fcf87954356242477bcd707a822dd00bdd8"
+    "instanceId": "e263dfa0eec821411a63489df913871e978421a72809440c307b1696ff37981c",
+    "templateCredsSetupCompleted": true
   },
   "id": "alUcO8QnJIrLG63w",
   "tags": []
